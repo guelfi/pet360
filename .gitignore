@@ -1,6 +1,8 @@
 # Dependencies
 node_modules
 .pnpm-store
+# Decisao deliberada do projeto (commit 7bd104e): gerado no Docker build
+pnpm-lock.yaml
 
 # Build outputs
 dist
