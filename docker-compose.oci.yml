@@ -76,7 +76,6 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_BASE_PATH: /pet360
     container_name: pet360-web
     restart: always
     environment:
