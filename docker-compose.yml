@@ -1,5 +1,9 @@
 version: '3.8'
 
+# NOTA: este compose (com nginx proprio nas portas 80/443) e para deploy
+# standalone em um VPS dedicado. Para a OCI compartilhada (nginx-proxy
+# externo, roteamento por subpath), use docker-compose.oci.yml.
+
 services:
   # PostgreSQL Database
   postgres:
@@ -84,7 +88,7 @@ services:
 
   # Evolution API (WhatsApp)
   evolution:
-    image: atendai/evolution-api:latest
+    image: evoapicloud/evolution-api:v2.3.7
     container_name: pet360-evolution
     restart: unless-stopped
     environment:

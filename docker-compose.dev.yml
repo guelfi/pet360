@@ -16,7 +16,7 @@ services:
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pet360"]
       interval: 5s
@@ -31,7 +31,7 @@ services:
     volumes:
       - redis_dev_data:/data
     ports:
-      - "6379:6379"
+      - "6380:6379"
 
   # PgAdmin (Database Management)
   pgadmin:
@@ -48,18 +48,18 @@ services:
 
   # Evolution API (WhatsApp) - Development
   evolution:
-    image: atendai/evolution-api:latest
+    image: evoapicloud/evolution-api:v2.3.7
     container_name: pet360-evolution-dev
     restart: unless-stopped
     environment:
-      SERVER_URL: http://localhost:8080
+      SERVER_URL: http://localhost:8090
       AUTHENTICATION_TYPE: apikey
       AUTHENTICATION_API_KEY: dev-api-key
       DATABASE_ENABLED: true
       DATABASE_PROVIDER: postgresql
       DATABASE_CONNECTION_URI: postgresql://pet360:pet360_secret@postgres:5432/pet360
     ports:
-      - "8080:8080"
+      - "8090:8080"
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,117 @@
+# ===========================================
+# pet360 - OCI shared-host Docker Compose
+# ===========================================
+# Para deploy na OCI compartilhada (nginx-proxy externo faz o roteamento
+# por subpath /pet360/ e /pet360-api/, alcancando os containers pelo
+# nome via rede Docker). Sem nginx proprio, sem bind de porta no host.
+#
+# Uso: docker compose -f docker-compose.oci.yml up -d --build
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pet360-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pet360}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-pet360}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pet360}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pet360-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: pet360-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pet360-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: pet360-api
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pet360}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pet360}
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: ${FRONTEND_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 7d
+      EVOLUTION_API_URL: http://evolution:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/api/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - pet360-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_BASE_PATH: /pet360
+    container_name: pet360-web
+    restart: always
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+    networks:
+      - pet360-network
+
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: pet360-evolution
+    restart: always
+    environment:
+      SERVER_URL: ${EVOLUTION_PUBLIC_URL}
+      AUTHENTICATION_TYPE: apikey
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      DATABASE_ENABLED: true
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-pet360}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pet360}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    networks:
+      - pet360-network
+
+networks:
+  pet360-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  evolution_instances:
+  evolution_store:
