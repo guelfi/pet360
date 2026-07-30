@@ -7,6 +7,12 @@ const nextConfig = {
   transpilePackages: ['@pet360/shared'],
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
   images: {
+    // O otimizador de imagens do Next.js (/_next/image) nao respeita
+    // basePath ao buscar a imagem original localmente, quebrando toda
+    // imagem local quando a app roda sob um subpath (ex: /pet360/).
+    // As imagens locais continuam servidas normalmente via /public,
+    // so sem o redimensionamento/otimizacao automatica.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

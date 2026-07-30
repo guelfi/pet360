@@ -77,6 +77,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <Link href="/" className="text-2xl font-bold text-primary mb-2 block">Pet360</Link>
           <CardTitle className="text-2xl">Entrar no Pet360</CardTitle>
           <CardDescription>Acesse sua conta para gerenciar seu negocio</CardDescription>
         </CardHeader>
