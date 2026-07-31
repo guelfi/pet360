@@ -30,8 +30,8 @@ export class DaycareController {
 
   @Post('enrollments')
   @ApiOperation({ summary: 'Criar matricula' })
-  async createEnrollment(@Body() data: any) {
-    return this.daycareService.createEnrollment(data);
+  async createEnrollment(@Body() data: any, @Request() req: any) {
+    return this.daycareService.createEnrollment(req.user.businessId, data);
   }
 
   @Get('attendance')
@@ -42,19 +42,19 @@ export class DaycareController {
 
   @Post('attendance/:enrollmentId/checkin')
   @ApiOperation({ summary: 'Check-in' })
-  async checkIn(@Param('enrollmentId') enrollmentId: string) {
-    return this.daycareService.checkIn(enrollmentId, new Date());
+  async checkIn(@Param('enrollmentId') enrollmentId: string, @Request() req: any) {
+    return this.daycareService.checkIn(enrollmentId, new Date(), req.user.businessId);
   }
 
   @Post('attendance/:enrollmentId/checkout')
   @ApiOperation({ summary: 'Check-out' })
-  async checkOut(@Param('enrollmentId') enrollmentId: string) {
-    return this.daycareService.checkOut(enrollmentId, new Date());
+  async checkOut(@Param('enrollmentId') enrollmentId: string, @Request() req: any) {
+    return this.daycareService.checkOut(enrollmentId, new Date(), req.user.businessId);
   }
 
   @Put('attendance/:id')
   @ApiOperation({ summary: 'Atualizar frequencia' })
-  async updateAttendance(@Param('id') id: string, @Body() data: any) {
-    return this.daycareService.updateAttendance(id, data);
+  async updateAttendance(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+    return this.daycareService.updateAttendance(id, req.user.businessId, data);
   }
 }

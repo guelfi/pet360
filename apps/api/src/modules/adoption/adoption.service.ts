@@ -47,7 +47,8 @@ export class AdoptionService {
     return this.prisma.adoptionAnimal.update({ where: { id }, data, include: { pet: true } });
   }
 
-  async createInquiry(adoptionAnimalId: string, data: any) {
+  async createInquiry(adoptionAnimalId: string, data: any, businessId: string) {
+    await this.findOneAnimal(adoptionAnimalId, businessId);
     await this.prisma.adoptionAnimal.update({
       where: { id: adoptionAnimalId },
       data: { inquiryCount: { increment: 1 } },
@@ -56,22 +57,34 @@ export class AdoptionService {
   }
 
   async createAdoption(businessId: string, data: any) {
+    await this.findOneAnimal(data.adoptionAnimalId, businessId);
+    const tutor = await this.prisma.tutor.findFirst({ where: { id: data.tutorId, businessId } });
+    if (!tutor) throw new NotFoundException('Tutor nao encontrado');
+
     return this.prisma.adoption.create({
       data,
       include: { adoptionAnimal: { include: { pet: true } }, tutor: true },
     });
   }
 
-  async updateAdoption(id: string, data: any) {
-    return this.prisma.adoption.update({ where: { id }, data });
-  }
-
-  async completeAdoption(id: string, tutorId: string) {
-    const adoption = await this.prisma.adoption.findUnique({
-      where: { id },
+  private async findOneAdoption(id: string, businessId: string) {
+    const adoption = await this.prisma.adoption.findFirst({
+      where: { id, adoptionAnimal: { businessId } },
       include: { adoptionAnimal: true },
     });
     if (!adoption) throw new NotFoundException('Adocao nao encontrada');
+    return adoption;
+  }
+
+  async updateAdoption(id: string, businessId: string, data: any) {
+    await this.findOneAdoption(id, businessId);
+    return this.prisma.adoption.update({ where: { id }, data });
+  }
+
+  async completeAdoption(id: string, tutorId: string, businessId: string) {
+    const adoption = await this.findOneAdoption(id, businessId);
+    const tutor = await this.prisma.tutor.findFirst({ where: { id: tutorId, businessId } });
+    if (!tutor) throw new NotFoundException('Tutor nao encontrado');
 
     await this.prisma.$transaction([
       this.prisma.adoption.update({

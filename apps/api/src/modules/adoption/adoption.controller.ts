@@ -36,8 +36,8 @@ export class AdoptionController {
 
   @Post('inquiries')
   @ApiOperation({ summary: 'Manifestar interesse' })
-  async createInquiry(@Body() data: any) {
-    return this.adoptionService.createInquiry(data.adoptionAnimalId, data);
+  async createInquiry(@Body() data: any, @Request() req: any) {
+    return this.adoptionService.createInquiry(data.adoptionAnimalId, data, req.user.businessId);
   }
 
   @Post('processes')
@@ -48,13 +48,13 @@ export class AdoptionController {
 
   @Put('processes/:id')
   @ApiOperation({ summary: 'Atualizar processo' })
-  async updateAdoption(@Param('id') id: string, @Body() data: any) {
-    return this.adoptionService.updateAdoption(id, data);
+  async updateAdoption(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+    return this.adoptionService.updateAdoption(id, req.user.businessId, data);
   }
 
   @Post('processes/:id/complete')
   @ApiOperation({ summary: 'Finalizar adocao' })
-  async completeAdoption(@Param('id') id: string, @Body('tutorId') tutorId: string) {
-    return this.adoptionService.completeAdoption(id, tutorId);
+  async completeAdoption(@Param('id') id: string, @Body('tutorId') tutorId: string, @Request() req: any) {
+    return this.adoptionService.completeAdoption(id, tutorId, req.user.businessId);
   }
 }

@@ -35,9 +35,16 @@ export class DaycareService {
     return { data: enrollments, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
-  async createEnrollment(data: any) {
-    const pkg = await this.prisma.daycarePackage.findUnique({ where: { id: data.packageId } });
+  async createEnrollment(businessId: string, data: any) {
+    const pkg = await this.prisma.daycarePackage.findFirst({ where: { id: data.packageId, businessId } });
     if (!pkg) throw new NotFoundException('Pacote nao encontrado');
+    const [pet, tutor] = await Promise.all([
+      this.prisma.pet.findFirst({ where: { id: data.petId, businessId } }),
+      this.prisma.tutor.findFirst({ where: { id: data.tutorId, businessId } }),
+    ]);
+    if (!pet) throw new NotFoundException('Pet nao encontrado');
+    if (!tutor) throw new NotFoundException('Tutor nao encontrado');
+
     return this.prisma.daycareEnrollment.create({
       data: {
         ...data,
@@ -49,9 +56,24 @@ export class DaycareService {
     });
   }
 
-  async checkIn(enrollmentId: string, date: Date) {
-    const enrollment = await this.prisma.daycareEnrollment.findUnique({ where: { id: enrollmentId } });
+  private async assertOwnsEnrollment(enrollmentId: string, businessId: string) {
+    const enrollment = await this.prisma.daycareEnrollment.findFirst({
+      where: { id: enrollmentId, package: { businessId } },
+    });
     if (!enrollment) throw new NotFoundException('Matricula nao encontrada');
+    return enrollment;
+  }
+
+  private async assertOwnsAttendance(attendanceId: string, businessId: string) {
+    const attendance = await this.prisma.daycareAttendance.findFirst({
+      where: { id: attendanceId, enrollment: { package: { businessId } } },
+    });
+    if (!attendance) throw new NotFoundException('Frequencia nao encontrada');
+    return attendance;
+  }
+
+  async checkIn(enrollmentId: string, date: Date, businessId: string) {
+    await this.assertOwnsEnrollment(enrollmentId, businessId);
 
     const attendance = await this.prisma.daycareAttendance.upsert({
       where: { enrollmentId_date: { enrollmentId, date } },
@@ -67,14 +89,16 @@ export class DaycareService {
     return attendance;
   }
 
-  async checkOut(enrollmentId: string, date: Date) {
+  async checkOut(enrollmentId: string, date: Date, businessId: string) {
+    await this.assertOwnsEnrollment(enrollmentId, businessId);
     return this.prisma.daycareAttendance.update({
       where: { enrollmentId_date: { enrollmentId, date } },
       data: { checkOutTime: new Date() },
     });
   }
 
-  async updateAttendance(attendanceId: string, data: any) {
+  async updateAttendance(attendanceId: string, businessId: string, data: any) {
+    await this.assertOwnsAttendance(attendanceId, businessId);
     return this.prisma.daycareAttendance.update({ where: { id: attendanceId }, data });
   }
 

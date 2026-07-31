@@ -61,12 +61,12 @@ export class BoardingController {
   @Post('reservations/:id/updates')
   @ApiOperation({ summary: 'Adicionar atualizacao' })
   async addUpdate(@Param('id') id: string, @Body() data: any, @Request() req: any) {
-    return this.boardingService.addUpdate(id, req.user.sub, data);
+    return this.boardingService.addUpdate(id, req.user.businessId, req.user.sub, data);
   }
 
   @Get('reservations/:id/updates')
   @ApiOperation({ summary: 'Listar atualizacoes' })
-  async getUpdates(@Param('id') id: string) {
-    return this.boardingService.getUpdates(id);
+  async getUpdates(@Param('id') id: string, @Request() req: any) {
+    return this.boardingService.getUpdates(id, req.user.businessId);
   }
 }

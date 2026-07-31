@@ -54,7 +54,7 @@ export class ProductsController {
 
   @Post('stock/movements')
   @ApiOperation({ summary: 'Registrar movimento de estoque' })
-  async addStockMovement(@Body() data: any) {
-    return this.productsService.addStockMovement(data.productId, data);
+  async addStockMovement(@Body() data: any, @Request() req: any) {
+    return this.productsService.addStockMovement(data.productId, req.user.businessId, data);
   }
 }

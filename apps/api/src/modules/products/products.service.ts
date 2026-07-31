@@ -63,8 +63,8 @@ export class ProductsService {
     });
   }
 
-  async addStockMovement(productId: string, data: any) {
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+  async addStockMovement(productId: string, businessId: string, data: any) {
+    const product = await this.prisma.product.findFirst({ where: { id: productId, businessId } });
     if (!product) throw new NotFoundException('Produto nao encontrado');
 
     const previousStock = Number(product.currentStock);

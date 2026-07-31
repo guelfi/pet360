@@ -101,13 +101,17 @@ export class BoardingService {
     });
   }
 
-  async addUpdate(boardingId: string, userId: string, data: any) {
+  async addUpdate(boardingId: string, businessId: string, userId: string, data: any) {
+    const boarding = await this.prisma.boarding.findFirst({ where: { id: boardingId, businessId } });
+    if (!boarding) throw new NotFoundException('Reserva nao encontrada');
     return this.prisma.boardingUpdate.create({
       data: { ...data, boardingId, userId },
     });
   }
 
-  async getUpdates(boardingId: string) {
+  async getUpdates(boardingId: string, businessId: string) {
+    const boarding = await this.prisma.boarding.findFirst({ where: { id: boardingId, businessId } });
+    if (!boarding) throw new NotFoundException('Reserva nao encontrada');
     return this.prisma.boardingUpdate.findMany({
       where: { boardingId },
       include: { user: { select: { name: true } } },
