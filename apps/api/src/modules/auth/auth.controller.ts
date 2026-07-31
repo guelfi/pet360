@@ -10,10 +10,14 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 const ACCESS_COOKIE_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutos (bate com JWT_EXPIRATION default)
 
+// Flag "Secure" desligada por padrao: o deploy atual na OCI serve tudo em
+// HTTP puro (IP direto, sem TLS), e um cookie Secure sobre HTTP nunca e
+// enviado de volta pelo navegador, quebrando o login inteiro em producao.
+// Ligar via env COOKIE_SECURE=true quando o dominio tiver HTTPS.
 function cookieOptions(maxAgeMs: number) {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.COOKIE_SECURE === 'true',
     sameSite: 'lax' as const,
     maxAge: maxAgeMs,
     path: '/',
