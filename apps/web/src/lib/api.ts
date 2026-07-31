@@ -29,7 +29,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+          window.location.href = `${basePath}/login`;
         }
       }
     }
