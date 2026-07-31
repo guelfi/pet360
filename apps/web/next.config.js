@@ -6,6 +6,13 @@ const nextConfig = {
   output: 'standalone',
   transpilePackages: ['@pet360/shared'],
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
+  env: {
+    // Exposto ao browser (unico jeito de o basePath chegar em client
+    // components) - usado para prefixar manualmente src de imagens
+    // locais, ja que unoptimized:true faz o next/image ignorar o
+    // basePath automatico.
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   images: {
     // O otimizador de imagens do Next.js (/_next/image) nao respeita
     // basePath ao buscar a imagem original localmente, quebrando toda

@@ -184,6 +184,8 @@ const faqs = [
   },
 ];
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
@@ -232,7 +234,7 @@ export default function Home() {
         {/* Hero Banner Image */}
         <div className="relative w-full">
           <Image
-            src="/images/hero-banner-2.jpg"
+            src={`${basePath}/images/hero-banner-2.jpg`}
             alt="Pet360 - Sistema Completo de Gestao para Negocios Pet"
             width={1920}
             height={1080}
@@ -287,7 +289,7 @@ export default function Home() {
       <section id="demo" className="relative overflow-hidden">
         <div className="relative w-full">
           <Image
-            src="/images/hero-banner-1.jpg"
+            src={`${basePath}/images/hero-banner-1.jpg`}
             alt="Pet360 - Todas as funcionalidades"
             width={1920}
             height={1080}
