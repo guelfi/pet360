@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -13,6 +13,19 @@ export class WhatsAppService {
   ) {
     this.evolutionApiUrl = this.configService.get<string>('EVOLUTION_API_URL') || 'http://localhost:8080';
     this.evolutionApiKey = this.configService.get<string>('EVOLUTION_API_KEY') || '';
+  }
+
+  /**
+   * instanceName vinha da query/body sem checar contra o negocio de quem
+   * chama - qualquer usuario autenticado (de qualquer negocio) conseguia
+   * ler o QR code/status ou mandar mensagem pela instancia de WhatsApp de
+   * outro negocio, so sabendo o nome da instancia.
+   */
+  private async assertOwnsInstance(businessId: string, instanceName: string) {
+    const business = await this.prisma.business.findUnique({ where: { id: businessId } });
+    if (!business?.whatsappInstanceId || business.whatsappInstanceId !== instanceName) {
+      throw new ForbiddenException('Instância de WhatsApp não pertence a este negócio');
+    }
   }
 
   private async evolutionRequest(endpoint: string, method: string = 'GET', body?: any) {
@@ -42,15 +55,18 @@ export class WhatsAppService {
     return result;
   }
 
-  async getQrCode(instanceName: string) {
+  async getQrCode(businessId: string, instanceName: string) {
+    await this.assertOwnsInstance(businessId, instanceName);
     return this.evolutionRequest(`/instance/connect/${instanceName}`);
   }
 
-  async getStatus(instanceName: string) {
+  async getStatus(businessId: string, instanceName: string) {
+    await this.assertOwnsInstance(businessId, instanceName);
     return this.evolutionRequest(`/instance/connectionState/${instanceName}`);
   }
 
-  async sendText(instanceName: string, number: string, text: string) {
+  async sendText(businessId: string, instanceName: string, number: string, text: string) {
+    await this.assertOwnsInstance(businessId, instanceName);
     return this.evolutionRequest(`/message/sendText/${instanceName}`, 'POST', {
       number,
       text,
@@ -68,10 +84,10 @@ export class WhatsAppService {
 
   async sendVaccineCard(businessId: string, tutorPhone: string, petId: string) {
     const business = await this.prisma.business.findUnique({ where: { id: businessId } });
-    if (!business?.whatsappInstanceId) throw new Error('WhatsApp nao configurado');
+    if (!business?.whatsappInstanceId) throw new BadRequestException('WhatsApp nao configurado');
 
-    const pet = await this.prisma.pet.findUnique({
-      where: { id: petId },
+    const pet = await this.prisma.pet.findFirst({
+      where: { id: petId, businessId },
       include: {
         tutor: true,
         vaccineRecords: {
@@ -81,7 +97,7 @@ export class WhatsAppService {
       },
     });
 
-    if (!pet) throw new Error('Pet nao encontrado');
+    if (!pet) throw new NotFoundException('Pet nao encontrado');
 
     const vaccineList = pet.vaccineRecords
       .map((v) => `- ${v.vaccineName}: ${new Date(v.applicationDate).toLocaleDateString('pt-BR')}`)
@@ -89,10 +105,21 @@ export class WhatsAppService {
 
     const message = `*Carteira de Vacinacao - ${pet.name}*\n\n${vaccineList}\n\n_${business.name}_`;
 
-    return this.sendText(business.whatsappInstanceId, tutorPhone, message);
+    return this.sendText(businessId, business.whatsappInstanceId, tutorPhone, message);
   }
 
-  async handleWebhook(businessId: string, data: any) {
+  /**
+   * businessId vem da query string sem nenhuma verificacao de que a
+   * requisicao realmente veio da Evolution API - qualquer um podia forjar
+   * um webhook e injetar mensagens falsas pra qualquer negocio. Exige o
+   * mesmo apikey configurado pra chamar a Evolution API (enviado de volta
+   * no header 'apikey', igual as chamadas que fazemos pra ela).
+   */
+  async handleWebhook(businessId: string, data: any, providedApiKey?: string) {
+    if (!this.evolutionApiKey || providedApiKey !== this.evolutionApiKey) {
+      throw new UnauthorizedException('Assinatura de webhook inválida');
+    }
+
     if (data.event === 'messages.upsert') {
       const message = data.data;
       await this.prisma.whatsAppMessage.create({

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Request, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { WhatsAppService } from './whatsapp.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,24 +20,24 @@ export class WhatsAppController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obter QR Code' })
-  async getQrCode(@Query('instanceName') instanceName: string) {
-    return this.whatsAppService.getQrCode(instanceName);
+  async getQrCode(@Request() req: any, @Query('instanceName') instanceName: string) {
+    return this.whatsAppService.getQrCode(req.user.businessId, instanceName);
   }
 
   @Get('system/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Status da conexao' })
-  async getStatus(@Query('instanceName') instanceName: string) {
-    return this.whatsAppService.getStatus(instanceName);
+  async getStatus(@Request() req: any, @Query('instanceName') instanceName: string) {
+    return this.whatsAppService.getStatus(req.user.businessId, instanceName);
   }
 
   @Post('send/text')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Enviar texto' })
-  async sendText(@Body() data: { instanceName: string; number: string; text: string }) {
-    return this.whatsAppService.sendText(data.instanceName, data.number, data.text);
+  async sendText(@Request() req: any, @Body() data: { instanceName: string; number: string; text: string }) {
+    return this.whatsAppService.sendText(req.user.businessId, data.instanceName, data.number, data.text);
   }
 
   @Post('send/vaccine-card')
@@ -50,8 +50,12 @@ export class WhatsAppController {
 
   @Post('webhooks')
   @ApiOperation({ summary: 'Webhook para receber mensagens' })
-  async handleWebhook(@Query('businessId') businessId: string, @Body() data: any) {
-    return this.whatsAppService.handleWebhook(businessId, data);
+  async handleWebhook(
+    @Query('businessId') businessId: string,
+    @Body() data: any,
+    @Headers('apikey') apiKey?: string,
+  ) {
+    return this.whatsAppService.handleWebhook(businessId, data, apiKey);
   }
 
   @Get('templates')
