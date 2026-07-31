@@ -30,9 +30,26 @@ export class MarketplaceService {
   }
 
   async getSeller(id: string) {
+    // Endpoint publico (sem auth) - NUNCA selecionar passwordHash/dados bancarios aqui.
     const seller = await this.prisma.marketplaceSeller.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        companyName: true,
+        description: true,
+        logoUrl: true,
+        bannerUrl: true,
+        city: true,
+        state: true,
+        sellerType: true,
+        isVerified: true,
+        isFeatured: true,
+        averageRating: true,
+        totalReviews: true,
+        totalSales: true,
+        isActive: true,
+        createdAt: true,
         listings: { where: { status: 'ACTIVE' }, take: 10 },
         _count: { select: { listings: true, orders: true, reviews: true } },
       },

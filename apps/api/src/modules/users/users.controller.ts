@@ -18,19 +18,19 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Buscar usuario por ID' })
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    return this.usersService.findOne(id, req.user.businessId);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar usuario' })
-  async update(@Param('id') id: string, @Body() data: any) {
-    return this.usersService.update(id, data);
+  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+    return this.usersService.update(id, req.user.businessId, data);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remover usuario' })
-  async delete(@Param('id') id: string) {
-    return this.usersService.delete(id);
+  async delete(@Param('id') id: string, @Request() req: any) {
+    return this.usersService.delete(id, req.user.businessId);
   }
 }

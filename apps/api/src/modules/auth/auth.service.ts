@@ -69,7 +69,7 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
-      const user = await this.usersService.findOne(payload.sub);
+      const user = await this.usersService.findById(payload.sub);
       if (!user || !user.isActive) {
         throw new UnauthorizedException('Usuario nao encontrado ou inativo');
       }
@@ -94,12 +94,11 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    const user = await this.usersService.findOne(userId);
+    const user = await this.usersService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('Usuario nao encontrado');
     }
-    const { passwordHash, ...result } = user;
-    return result;
+    return user;
   }
 
   async requestOtp(phone: string) {

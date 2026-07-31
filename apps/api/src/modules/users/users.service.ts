@@ -7,12 +7,29 @@ import { RegisterDto } from '../auth/dto/register.dto';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(id: string) {
+  async findOne(id: string, businessId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id, businessId },
+      include: { business: true },
+    });
+    if (!user) throw new NotFoundException('Usuario nao encontrado');
+    const { passwordHash: _, ...safe } = user;
+    return safe;
+  }
+
+  /**
+   * Auto-consulta a partir de um ID ja verificado por JWT (payload.sub), nao
+   * de um parametro de URL/body vindo de outro usuario - sem risco de IDOR
+   * porque quem pode chamar isso e apenas o dono do proprio token.
+   */
+  async findById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: { business: true },
     });
-    return user;
+    if (!user) return null;
+    const { passwordHash: _, ...safe } = user;
+    return safe;
   }
 
   async findByEmail(email: string) {
@@ -90,25 +107,37 @@ export class UsersService {
     };
   }
 
-  async update(id: string, data: any) {
-    const user = await this.findOne(id);
+  async update(id: string, businessId: string, data: any) {
+    const user = await this.prisma.user.findFirst({ where: { id, businessId } });
     if (!user) {
       throw new NotFoundException('Usuario nao encontrado');
     }
+
+    // Bloqueia escalacao de privilegio / troca de tenant via mass-assignment.
+    // TODO(RBAC): quando houver checagem de papel, permitir OWNER/ADMIN trocar
+    // role de outros usuarios do mesmo negocio via fluxo dedicado, nao aqui.
+    delete data.role;
+    delete data.businessId;
+    delete data.passwordHash;
+    delete data.id;
+    delete data.otpCode;
+    delete data.otpExpiresAt;
 
     if (data.password) {
       data.passwordHash = await bcrypt.hash(data.password, 10);
       delete data.password;
     }
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data,
     });
+    const { passwordHash: _, ...safe } = updated;
+    return safe;
   }
 
-  async delete(id: string) {
-    const user = await this.findOne(id);
+  async delete(id: string, businessId: string) {
+    const user = await this.prisma.user.findFirst({ where: { id, businessId } });
     if (!user) {
       throw new NotFoundException('Usuario nao encontrado');
     }
