@@ -2,6 +2,9 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Requ
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { AddStockMovementDto } from './dto/add-stock-movement.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -36,13 +39,13 @@ export class ProductsController {
 
   @Post()
   @ApiOperation({ summary: 'Criar produto' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateProductDto, @Request() req: any) {
     return this.productsService.create(req.user.businessId, data);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar produto' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateProductDto, @Request() req: any) {
     return this.productsService.update(id, req.user.businessId, data);
   }
 
@@ -54,7 +57,7 @@ export class ProductsController {
 
   @Post('stock/movements')
   @ApiOperation({ summary: 'Registrar movimento de estoque' })
-  async addStockMovement(@Body() data: any, @Request() req: any) {
+  async addStockMovement(@Body() data: AddStockMovementDto, @Request() req: any) {
     return this.productsService.addStockMovement(data.productId, req.user.businessId, data);
   }
 }

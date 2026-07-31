@@ -2,6 +2,9 @@ import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } fr
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DaycareService } from './daycare.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreatePackageDto } from './dto/create-package.dto';
+import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 
 @ApiTags('daycare')
 @Controller('daycare')
@@ -18,7 +21,7 @@ export class DaycareController {
 
   @Post('packages')
   @ApiOperation({ summary: 'Criar pacote' })
-  async createPackage(@Body() data: any, @Request() req: any) {
+  async createPackage(@Body() data: CreatePackageDto, @Request() req: any) {
     return this.daycareService.createPackage(req.user.businessId, data);
   }
 
@@ -30,7 +33,7 @@ export class DaycareController {
 
   @Post('enrollments')
   @ApiOperation({ summary: 'Criar matricula' })
-  async createEnrollment(@Body() data: any, @Request() req: any) {
+  async createEnrollment(@Body() data: CreateEnrollmentDto, @Request() req: any) {
     return this.daycareService.createEnrollment(req.user.businessId, data);
   }
 
@@ -54,7 +57,7 @@ export class DaycareController {
 
   @Put('attendance/:id')
   @ApiOperation({ summary: 'Atualizar frequencia' })
-  async updateAttendance(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async updateAttendance(@Param('id') id: string, @Body() data: UpdateAttendanceDto, @Request() req: any) {
     return this.daycareService.updateAttendance(id, req.user.businessId, data);
   }
 }

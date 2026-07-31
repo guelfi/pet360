@@ -2,6 +2,10 @@ import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } fr
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { BoardingService } from './boarding.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
+import { CreateBoardingDto } from './dto/create-boarding.dto';
+import { CreateBoardingUpdateDto } from './dto/create-update.dto';
 
 @ApiTags('boarding')
 @Controller('boarding')
@@ -18,13 +22,13 @@ export class BoardingController {
 
   @Post('rooms')
   @ApiOperation({ summary: 'Criar quarto' })
-  async createRoom(@Body() data: any, @Request() req: any) {
+  async createRoom(@Body() data: CreateRoomDto, @Request() req: any) {
     return this.boardingService.createRoom(req.user.businessId, data);
   }
 
   @Put('rooms/:id')
   @ApiOperation({ summary: 'Atualizar quarto' })
-  async updateRoom(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async updateRoom(@Param('id') id: string, @Body() data: UpdateRoomDto, @Request() req: any) {
     return this.boardingService.updateRoom(id, req.user.businessId, data);
   }
 
@@ -42,7 +46,7 @@ export class BoardingController {
 
   @Post('reservations')
   @ApiOperation({ summary: 'Criar reserva' })
-  async createBoarding(@Body() data: any, @Request() req: any) {
+  async createBoarding(@Body() data: CreateBoardingDto, @Request() req: any) {
     return this.boardingService.createBoarding(req.user.businessId, data);
   }
 
@@ -60,7 +64,7 @@ export class BoardingController {
 
   @Post('reservations/:id/updates')
   @ApiOperation({ summary: 'Adicionar atualizacao' })
-  async addUpdate(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async addUpdate(@Param('id') id: string, @Body() data: CreateBoardingUpdateDto, @Request() req: any) {
     return this.boardingService.addUpdate(id, req.user.businessId, req.user.sub, data);
   }
 

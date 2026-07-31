@@ -9,6 +9,10 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateSellerDto } from './dto/update-seller.dto';
+import { UpdateListingDto } from './dto/update-listing.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { RejectListingDto } from './dto/reject-listing.dto';
 
 @ApiTags('marketplace')
 @Controller('marketplace')
@@ -33,7 +37,7 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar dados do vendedor' })
-  async updateSeller(@Param('id') id: string, @Body() data: Partial<RegisterSellerDto>, @Request() req: any) {
+  async updateSeller(@Param('id') id: string, @Body() data: UpdateSellerDto, @Request() req: any) {
     return this.marketplaceService.updateSeller(id, data, req.user.email);
   }
 
@@ -104,7 +108,7 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar anuncio' })
-  async updateListing(@Param('id') id: string, @Body() dto: Partial<CreateListingDto>, @Request() req: any) {
+  async updateListing(@Param('id') id: string, @Body() dto: UpdateListingDto, @Request() req: any) {
     return this.marketplaceService.updateListing(id, dto, req.user.email);
   }
 
@@ -154,7 +158,7 @@ export class MarketplaceController {
   @ApiOperation({ summary: 'Atualizar status do pedido' })
   async updateOrderStatus(
     @Param('id') id: string,
-    @Body() data: { status: string; trackingCode?: string },
+    @Body() data: UpdateOrderStatusDto,
     @Request() req: any,
   ) {
     return this.marketplaceService.updateOrderStatus(id, data.status, data.trackingCode, req.user.email);
@@ -193,7 +197,7 @@ export class MarketplaceController {
   @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Rejeitar anuncio' })
-  async rejectListing(@Param('id') id: string, @Body() data: { reason: string }) {
+  async rejectListing(@Param('id') id: string, @Body() data: RejectListingDto) {
     return this.marketplaceService.rejectListing(id, data.reason);
   }
 

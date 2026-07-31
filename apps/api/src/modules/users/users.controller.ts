@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // Gestao de equipe (listar/editar/remover outros usuarios do negocio) -
 // perfil proprio continua em GET /auth/me, que nao passa por aqui.
@@ -29,7 +30,7 @@ export class UsersController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar usuario' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateUserDto, @Request() req: any) {
     return this.usersService.update(id, req.user.businessId, data);
   }
 

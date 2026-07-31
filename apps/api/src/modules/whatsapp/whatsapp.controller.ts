@@ -2,6 +2,9 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards, Request, Headers 
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { WhatsAppService } from './whatsapp.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SendTextDto } from './dto/send-text.dto';
+import { SendVaccineCardDto } from './dto/send-vaccine-card.dto';
+import { CreateTemplateDto } from './dto/create-template.dto';
 
 @ApiTags('whatsapp')
 @Controller('whatsapp')
@@ -36,7 +39,7 @@ export class WhatsAppController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Enviar texto' })
-  async sendText(@Request() req: any, @Body() data: { instanceName: string; number: string; text: string }) {
+  async sendText(@Request() req: any, @Body() data: SendTextDto) {
     return this.whatsAppService.sendText(req.user.businessId, data.instanceName, data.number, data.text);
   }
 
@@ -44,7 +47,7 @@ export class WhatsAppController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Enviar carteira de vacinas' })
-  async sendVaccineCard(@Request() req: any, @Body() data: { tutorPhone: string; petId: string }) {
+  async sendVaccineCard(@Request() req: any, @Body() data: SendVaccineCardDto) {
     return this.whatsAppService.sendVaccineCard(req.user.businessId, data.tutorPhone, data.petId);
   }
 
@@ -70,7 +73,7 @@ export class WhatsAppController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar template' })
-  async createTemplate(@Request() req: any, @Body() data: any) {
+  async createTemplate(@Request() req: any, @Body() data: CreateTemplateDto) {
     return this.whatsAppService.createTemplate(req.user.businessId, data);
   }
 }

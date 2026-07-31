@@ -2,6 +2,9 @@ import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request, Not
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 
 // VET, GROOMER e TRAINER so enxergam/agem sobre a propria agenda (matriz
 // de RBAC aprovada); OWNER, ADMIN e ATTENDANT tem acesso a agenda geral.
@@ -50,13 +53,13 @@ export class AppointmentsController {
 
   @Post()
   @ApiOperation({ summary: 'Criar agendamento' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateAppointmentDto, @Request() req: any) {
     return this.appointmentsService.create(req.user.businessId, data);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar agendamento' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateAppointmentDto, @Request() req: any) {
     await this.assertOwnAgendaById(req, id);
     return this.appointmentsService.update(id, req.user.businessId, data);
   }
@@ -65,7 +68,7 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Atualizar status do agendamento' })
   async updateStatus(
     @Param('id') id: string,
-    @Body() data: { status: string },
+    @Body() data: UpdateAppointmentStatusDto,
     @Request() req: any,
   ) {
     await this.assertOwnAgendaById(req, id);

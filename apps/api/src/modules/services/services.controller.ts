@@ -4,6 +4,8 @@ import { ServicesService } from './services.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 // Nota: a matriz de RBAC aprovada previa GROOMER/TRAINER restritos aos
 // "servicos que prestam", mas o schema atual de Service nao tem nenhum
@@ -33,14 +35,14 @@ export class ServicesController {
   @Post()
   @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Criar servico' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateServiceDto, @Request() req: any) {
     return this.servicesService.create(req.user.businessId, data);
   }
 
   @Put(':id')
   @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Atualizar servico' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateServiceDto, @Request() req: any) {
     return this.servicesService.update(id, req.user.businessId, data);
   }
 

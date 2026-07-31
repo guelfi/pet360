@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SalesService } from './sales.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateSaleDto } from './dto/create-sale.dto';
 
 @ApiTags('sales')
 @Controller('sales')
@@ -24,7 +25,7 @@ export class SalesController {
 
   @Post()
   @ApiOperation({ summary: 'Criar venda' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateSaleDto, @Request() req: any) {
     return this.salesService.create(req.user.businessId, req.user.sub, data);
   }
 }

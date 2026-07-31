@@ -41,6 +41,10 @@ export class MedicalRecordsService {
 
   async create(businessId: string, vetId: string, data: any) {
     const { prescriptions, ...recordData } = data;
+
+    const pet = await this.prisma.pet.findFirst({ where: { id: recordData.petId, businessId } });
+    if (!pet) throw new NotFoundException('Pet nao encontrado');
+
     return this.prisma.medicalRecord.create({
       data: {
         ...recordData,

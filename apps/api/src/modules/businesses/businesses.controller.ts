@@ -4,6 +4,7 @@ import { BusinessesService } from './businesses.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { UpdateBusinessDto } from './dto/update-business.dto';
 
 @ApiTags('businesses')
 @Controller('businesses')
@@ -27,7 +28,7 @@ export class BusinessesController {
   @Put('current')
   @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Atualizar negocio atual' })
-  async updateCurrent(@Request() req: any, @Body() data: any) {
+  async updateCurrent(@Request() req: any, @Body() data: UpdateBusinessDto) {
     return this.businessesService.update(req.user.businessId, data);
   }
 

@@ -4,6 +4,8 @@ import { VaccinesService } from './vaccines.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CreateVaccineRecordDto } from './dto/create-vaccine-record.dto';
+import { UpdateVaccineRecordDto } from './dto/update-vaccine-record.dto';
 
 @ApiTags('vaccines')
 @Controller('vaccines')
@@ -33,13 +35,13 @@ export class VaccinesController {
 
   @Post()
   @ApiOperation({ summary: 'Registrar vacina' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateVaccineRecordDto, @Request() req: any) {
     return this.vaccinesService.create(req.user.businessId, req.user.sub, data);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar vacina' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateVaccineRecordDto, @Request() req: any) {
     return this.vaccinesService.update(id, req.user.businessId, data);
   }
 }

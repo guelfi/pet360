@@ -4,6 +4,8 @@ import { MedicalRecordsService } from './medical-records.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
+import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
 
 @ApiTags('medical-records')
 @Controller('medical-records')
@@ -27,13 +29,13 @@ export class MedicalRecordsController {
 
   @Post()
   @ApiOperation({ summary: 'Criar prontuario' })
-  async create(@Body() data: any, @Request() req: any) {
+  async create(@Body() data: CreateMedicalRecordDto, @Request() req: any) {
     return this.medicalRecordsService.create(req.user.businessId, req.user.sub, data);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar prontuario' })
-  async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() data: UpdateMedicalRecordDto, @Request() req: any) {
     return this.medicalRecordsService.update(id, req.user.businessId, data);
   }
 }

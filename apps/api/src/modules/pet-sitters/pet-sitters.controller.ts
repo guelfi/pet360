@@ -8,6 +8,9 @@ import { RegisterPetSitterDto } from './dto/register-pet-sitter.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CreatePetSitterReviewDto } from './dto/create-review.dto';
+import { UpdatePetSitterDto } from './dto/update-pet-sitter.dto';
+import { UpdatePetSitterServiceDto } from './dto/update-service.dto';
+import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 
 @ApiTags('pet-sitters')
 @Controller('pet-sitters')
@@ -45,7 +48,7 @@ export class PetSittersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar perfil do cuidador' })
-  async update(@Param('id') id: string, @Body() dto: Partial<RegisterPetSitterDto>, @Request() req: any) {
+  async update(@Param('id') id: string, @Body() dto: UpdatePetSitterDto, @Request() req: any) {
     return this.petSittersService.update(id, dto, req.user.email);
   }
 
@@ -62,7 +65,7 @@ export class PetSittersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar servico' })
-  async updateService(@Param('serviceId') serviceId: string, @Body() dto: Partial<CreateServiceDto>, @Request() req: any) {
+  async updateService(@Param('serviceId') serviceId: string, @Body() dto: UpdatePetSitterServiceDto, @Request() req: any) {
     return this.petSittersService.updateService(serviceId, dto, req.user.email);
   }
 
@@ -95,7 +98,7 @@ export class PetSittersController {
   @ApiOperation({ summary: 'Atualizar status da reserva' })
   async updateBookingStatus(
     @Param('bookingId') bookingId: string,
-    @Body() data: { status: string; reason?: string },
+    @Body() data: UpdateBookingStatusDto,
     @Request() req: any,
   ) {
     return this.petSittersService.updateBookingStatus(bookingId, data.status, data.reason, req.user.email);
@@ -123,7 +126,7 @@ export class PetSittersController {
   @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aprovar/Rejeitar cuidador' })
-  async updateStatus(@Param('id') id: string, @Body() data: { status: string; reason?: string }) {
+  async updateStatus(@Param('id') id: string, @Body() data: UpdateBookingStatusDto) {
     return this.petSittersService.updateStatus(id, data.status, data.reason);
   }
 }

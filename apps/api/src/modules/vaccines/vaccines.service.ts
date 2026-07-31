@@ -43,6 +43,9 @@ export class VaccinesService {
   }
 
   async create(businessId: string, vetId: string, data: any) {
+    const pet = await this.prisma.pet.findFirst({ where: { id: data.petId, businessId } });
+    if (!pet) throw new NotFoundException('Pet nao encontrado');
+
     return this.prisma.vaccineRecord.create({
       data: { ...data, businessId, vetId },
       include: { pet: true, vet: true },
