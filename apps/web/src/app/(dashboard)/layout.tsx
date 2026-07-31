@@ -33,16 +33,16 @@ const menuItems = [
   { href: '/dashboard/agenda', label: 'Agenda', icon: Calendar },
   { href: '/dashboard/tutores', label: 'Tutores', icon: Users },
   { href: '/dashboard/pets', label: 'Pets', icon: Dog },
-  { href: '/dashboard/prontuarios', label: 'Prontuarios', icon: Stethoscope },
-  { href: '/dashboard/vacinas', label: 'Vacinas', icon: Syringe },
+  { href: '/dashboard/prontuarios', label: 'Prontuarios', icon: Stethoscope, roles: ['OWNER', 'ADMIN', 'VET'] },
+  { href: '/dashboard/vacinas', label: 'Vacinas', icon: Syringe, roles: ['OWNER', 'ADMIN', 'VET'] },
   { href: '/dashboard/hospedagem', label: 'Hospedagem', icon: Hotel },
   { href: '/dashboard/adocao', label: 'Adocao', icon: Heart },
   { href: '/dashboard/produtos', label: 'Produtos', icon: Package },
   { href: '/dashboard/vendas', label: 'Vendas', icon: ShoppingCart },
-  { href: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign },
+  { href: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign, roles: ['OWNER', 'ADMIN'] },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/whatsapp', label: 'WhatsApp', icon: MessageSquare },
-  { href: '/dashboard/configuracoes', label: 'Configuracoes', icon: Settings },
+  { href: '/dashboard/configuracoes', label: 'Configuracoes', icon: Settings, roles: ['OWNER', 'ADMIN'] },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -92,7 +92,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-8rem)]">
-          {menuItems.map((item) => (
+          {menuItems
+            .filter((item) => !item.roles || item.roles.includes(user.role))
+            .map((item) => (
             <Link
               key={item.href}
               href={item.href}

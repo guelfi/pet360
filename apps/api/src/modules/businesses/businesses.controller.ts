@@ -2,10 +2,12 @@ import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { BusinessesService } from './businesses.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @ApiTags('businesses')
 @Controller('businesses')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class BusinessesController {
   constructor(private businessesService: BusinessesService) {}
@@ -23,12 +25,14 @@ export class BusinessesController {
   }
 
   @Put('current')
+  @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Atualizar negocio atual' })
   async updateCurrent(@Request() req: any, @Body() data: any) {
     return this.businessesService.update(req.user.businessId, data);
   }
 
   @Put('settings')
+  @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Atualizar configuracoes' })
   async updateSettings(@Request() req: any, @Body() settings: any) {
     return this.businessesService.updateSettings(req.user.businessId, settings);

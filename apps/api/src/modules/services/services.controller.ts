@@ -2,10 +2,18 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Requ
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ServicesService } from './services.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
+// Nota: a matriz de RBAC aprovada previa GROOMER/TRAINER restritos aos
+// "servicos que prestam", mas o schema atual de Service nao tem nenhum
+// vinculo com profissional (diferente do Appointment, que tem
+// professionalId) - nao existe "servicos que um groomer presta" pra
+// filtrar. Fica documentado aqui como limitacao conhecida; o catalogo de
+// servicos por enquanto e so leitura geral + escrita OWNER/ADMIN.
 @ApiTags('services')
 @Controller('services')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ServicesController {
   constructor(private servicesService: ServicesService) {}
@@ -23,18 +31,21 @@ export class ServicesController {
   }
 
   @Post()
+  @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Criar servico' })
   async create(@Body() data: any, @Request() req: any) {
     return this.servicesService.create(req.user.businessId, data);
   }
 
   @Put(':id')
+  @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Atualizar servico' })
   async update(@Param('id') id: string, @Body() data: any, @Request() req: any) {
     return this.servicesService.update(id, req.user.businessId, data);
   }
 
   @Delete(':id')
+  @Roles('OWNER', 'ADMIN')
   @ApiOperation({ summary: 'Remover servico' })
   async delete(@Param('id') id: string, @Request() req: any) {
     return this.servicesService.delete(id, req.user.businessId);

@@ -2,10 +2,15 @@ import { Controller, Get, Put, Delete, Param, Body, UseGuards, Request } from '@
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
+// Gestao de equipe (listar/editar/remover outros usuarios do negocio) -
+// perfil proprio continua em GET /auth/me, que nao passa por aqui.
 @ApiTags('users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('OWNER', 'ADMIN')
 @ApiBearerAuth()
 export class UsersController {
   constructor(private usersService: UsersService) {}
