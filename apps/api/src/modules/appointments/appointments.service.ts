@@ -61,6 +61,15 @@ export class AppointmentsService {
     });
     if (!service) throw new BadRequestException('Servico nao encontrado');
 
+    const [pet, tutor, professional] = await Promise.all([
+      this.prisma.pet.findFirst({ where: { id: data.petId, businessId } }),
+      this.prisma.tutor.findFirst({ where: { id: data.tutorId, businessId } }),
+      this.prisma.user.findFirst({ where: { id: data.professionalId, businessId } }),
+    ]);
+    if (!pet) throw new NotFoundException('Pet nao encontrado');
+    if (!tutor) throw new NotFoundException('Tutor nao encontrado');
+    if (!professional) throw new NotFoundException('Profissional nao encontrado');
+
     return this.prisma.appointment.create({
       data: {
         ...data,
@@ -126,7 +135,7 @@ export class AppointmentsService {
   }
 
   async getAvailableSlots(businessId: string, date: string, serviceId: string, professionalId?: string) {
-    const service = await this.prisma.service.findUnique({ where: { id: serviceId } });
+    const service = await this.prisma.service.findFirst({ where: { id: serviceId, businessId } });
     if (!service) throw new BadRequestException('Servico nao encontrado');
 
     const targetDate = new Date(date);

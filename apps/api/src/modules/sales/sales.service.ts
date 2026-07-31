@@ -38,6 +38,19 @@ export class SalesService {
   async create(businessId: string, userId: string, data: any) {
     const { items, ...saleData } = data;
 
+    if (data.tutorId) {
+      const tutor = await this.prisma.tutor.findFirst({ where: { id: data.tutorId, businessId } });
+      if (!tutor) throw new NotFoundException('Tutor nao encontrado');
+    }
+
+    const productIds = items.filter((item: any) => item.productId).map((item: any) => item.productId);
+    if (productIds.length > 0) {
+      const products = await this.prisma.product.findMany({ where: { id: { in: productIds }, businessId } });
+      if (products.length !== new Set(productIds).size) {
+        throw new NotFoundException('Produto nao encontrado');
+      }
+    }
+
     const subtotal = items.reduce((acc: number, item: any) => acc + Number(item.totalPrice), 0);
     const totalAmount = subtotal - (data.discount || 0);
 
