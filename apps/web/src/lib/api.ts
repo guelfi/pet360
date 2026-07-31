@@ -28,9 +28,19 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
+        // So forca navegacao se a sessao morreu dentro de uma area
+        // protegida (/dashboard, mesmo escopo que o middleware.ts ja
+        // guarda). Chamar isso em paginas publicas (landing, login,
+        // marketplace) forcaria redirect mesmo pra visitante nao
+        // logado - e como a propria /login tambem passa por este
+        // interceptor (AuthProvider chama /auth/me em toda pagina),
+        // sem essa checagem virava loop infinito de reload.
         if (typeof window !== 'undefined') {
           const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-          window.location.href = `${basePath}/login`;
+          const currentPath = window.location.pathname.slice(basePath.length) || '/';
+          if (currentPath.startsWith('/dashboard')) {
+            window.location.href = `${basePath}/login`;
+          }
         }
       }
     }
