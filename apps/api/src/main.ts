@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -9,10 +11,41 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
+  // Cookies (para o JWT em cookie httpOnly)
+  app.use(cookieParser());
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const allowedOrigins = [
+    frontendUrl,
+    ...(process.env.CORS_ALLOWED_ORIGINS?.split(',').map((s) => s.trim()).filter(Boolean) ?? []),
+  ];
+
   // CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     credentials: true,
+  });
+
+  // Mitigacao de CSRF: com o token em cookie httpOnly, requisicoes de
+  // mutacao vindas de outro site tambem enviariam o cookie automaticamente.
+  // SameSite=Lax ja bloqueia a maioria dos casos; isso complementa checando
+  // que o Origin (quando enviado, como sempre acontece em requisicoes de
+  // browser) bate com um frontend permitido. Requisicoes sem Origin (curl,
+  // server-to-server, webhook da Evolution API) nao sao afetadas - nao sao
+  // o vetor que CSRF explora.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+    const origin = req.headers.origin;
+
+    if (isMutation && origin && !allowedOrigins.includes(origin)) {
+      res.status(403).json({
+        statusCode: 403,
+        message: 'Origem não permitida',
+      });
+      return;
+    }
+
+    next();
   });
 
   // Validation

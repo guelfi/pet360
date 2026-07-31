@@ -5,20 +5,12 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Request interceptor to add auth token
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-// Response interceptor for token refresh
+// Response interceptor: em um 401, tenta renovar a sessao uma vez via
+// cookie httpOnly (refresh_token e enviado automaticamente, sem precisar
+// ler nada do localStorage) antes de desistir e mandar pro login.
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -28,24 +20,17 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
-            { refresh_token: refreshToken }
-          );
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
 
-          const { access_token, refresh_token } = response.data;
-          localStorage.setItem('token', access_token);
-          localStorage.setItem('refreshToken', refresh_token);
-
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          return api(originalRequest);
-        }
+        return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
       }
     }
 

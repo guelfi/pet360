@@ -19,7 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   loginWithOtp: (phone: string, otp: string) => Promise<void>;
   requestOtp: (phone: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,23 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchUser(token);
-    } else {
-      setIsLoading(false);
-    }
+    fetchUser();
   }, []);
 
-  const fetchUser = async (token: string) => {
+  const fetchUser = async () => {
     try {
-      const response = await api.get('/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/auth/me');
       setUser(response.data);
     } catch (error) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -54,10 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
-    const { access_token, refresh_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
-    localStorage.setItem('refreshToken', refresh_token);
-    setUser(userData);
+    setUser(response.data.user);
     router.push('/dashboard');
   };
 
@@ -67,18 +56,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithOtp = async (phone: string, otp: string) => {
     const response = await api.post('/auth/otp/verify', { phone, otp });
-    const { access_token, refresh_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
-    localStorage.setItem('refreshToken', refresh_token);
-    setUser(userData);
+    setUser(response.data.user);
     router.push('/dashboard');
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    setUser(null);
-    router.push('/login');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      setUser(null);
+      router.push('/login');
+    }
   };
 
   return (
