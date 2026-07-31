@@ -2,6 +2,8 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Requ
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { MarketplaceService } from './marketplace.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { RegisterSellerDto } from './dto/register-seller.dto';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -31,8 +33,8 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar dados do vendedor' })
-  async updateSeller(@Param('id') id: string, @Body() data: Partial<RegisterSellerDto>) {
-    return this.marketplaceService.updateSeller(id, data);
+  async updateSeller(@Param('id') id: string, @Body() data: Partial<RegisterSellerDto>, @Request() req: any) {
+    return this.marketplaceService.updateSeller(id, data, req.user.email);
   }
 
   // ========== CATEGORIES ==========
@@ -44,7 +46,8 @@ export class MarketplaceController {
   }
 
   @Post('categories')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar categoria (Admin)' })
   async createCategory(@Body() dto: CreateCategoryDto) {
@@ -93,32 +96,32 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar anuncio de produto' })
-  async createListing(@Param('sellerId') sellerId: string, @Body() dto: CreateListingDto) {
-    return this.marketplaceService.createListing(sellerId, dto);
+  async createListing(@Param('sellerId') sellerId: string, @Body() dto: CreateListingDto, @Request() req: any) {
+    return this.marketplaceService.createListing(sellerId, dto, req.user.email);
   }
 
   @Put('listings/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar anuncio' })
-  async updateListing(@Param('id') id: string, @Body() dto: Partial<CreateListingDto>) {
-    return this.marketplaceService.updateListing(id, dto);
+  async updateListing(@Param('id') id: string, @Body() dto: Partial<CreateListingDto>, @Request() req: any) {
+    return this.marketplaceService.updateListing(id, dto, req.user.email);
   }
 
   @Post('listings/:id/publish')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Publicar anuncio para revisao' })
-  async publishListing(@Param('id') id: string) {
-    return this.marketplaceService.publishListing(id);
+  async publishListing(@Param('id') id: string, @Request() req: any) {
+    return this.marketplaceService.publishListing(id, req.user.email);
   }
 
   @Delete('listings/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover anuncio' })
-  async deleteListing(@Param('id') id: string) {
-    return this.marketplaceService.deleteListing(id);
+  async deleteListing(@Param('id') id: string, @Request() req: any) {
+    return this.marketplaceService.deleteListing(id, req.user.email);
   }
 
   // ========== ORDERS ==========
@@ -133,16 +136,16 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar pedidos do vendedor' })
-  async getOrders(@Param('sellerId') sellerId: string, @Query('status') status?: string) {
-    return this.marketplaceService.getOrders(sellerId, status);
+  async getOrders(@Param('sellerId') sellerId: string, @Request() req: any, @Query('status') status?: string) {
+    return this.marketplaceService.getOrders(sellerId, status, req.user.email);
   }
 
   @Get('orders/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Detalhes do pedido' })
-  async getOrder(@Param('id') id: string) {
-    return this.marketplaceService.getOrder(id);
+  async getOrder(@Param('id') id: string, @Request() req: any) {
+    return this.marketplaceService.getOrder(id, req.user.email);
   }
 
   @Put('orders/:id/status')
@@ -152,8 +155,9 @@ export class MarketplaceController {
   async updateOrderStatus(
     @Param('id') id: string,
     @Body() data: { status: string; trackingCode?: string },
+    @Request() req: any,
   ) {
-    return this.marketplaceService.updateOrderStatus(id, data.status, data.trackingCode);
+    return this.marketplaceService.updateOrderStatus(id, data.status, data.trackingCode, req.user.email);
   }
 
   // ========== REVIEWS ==========
@@ -167,7 +171,8 @@ export class MarketplaceController {
   // ========== ADMIN ==========
 
   @Get('admin/pending')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar anuncios pendentes de aprovacao' })
   async getPendingListings() {
@@ -175,7 +180,8 @@ export class MarketplaceController {
   }
 
   @Post('admin/listings/:id/approve')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aprovar anuncio' })
   async approveListing(@Param('id') id: string) {
@@ -183,7 +189,8 @@ export class MarketplaceController {
   }
 
   @Post('admin/listings/:id/reject')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Rejeitar anuncio' })
   async rejectListing(@Param('id') id: string, @Body() data: { reason: string }) {
@@ -191,7 +198,8 @@ export class MarketplaceController {
   }
 
   @Get('admin/stats')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Estatisticas do marketplace' })
   async getStats() {

@@ -1,10 +1,42 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+
+// Campos que so um admin da plataforma (endpoints /admin/*) pode alterar.
+const SITTER_ADMIN_ONLY_FIELDS = [
+  'status', 'approvedAt', 'rejectionReason', 'averageRating', 'totalReviews',
+  'totalBookings', 'isVerified', 'isFeatured', 'isActive', 'email', 'passwordHash',
+];
+
+function pickAllowed<T extends Record<string, any>>(data: T, blocked: string[]): Partial<T> {
+  const result: Partial<T> = {};
+  for (const key of Object.keys(data)) {
+    if (!blocked.includes(key)) {
+      (result as any)[key] = data[key];
+    }
+  }
+  return result;
+}
 
 @Injectable()
 export class PetSittersService {
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * PetSitter nao tem vinculo (userId) com a conta pet360 de quem chama a
+   * API - so tem um email proprio, nunca usado pra login de verdade
+   * (passwordHash nunca e setado no cadastro). Ate existir um fluxo de
+   * autenticacao real de cuidador, o email da conta pet360 logada precisa
+   * bater com o email do cuidador pra provar posse.
+   */
+  private async assertOwnsSitter(sitterId: string, callerEmail: string) {
+    const sitter = await this.prisma.petSitter.findUnique({ where: { id: sitterId } });
+    if (!sitter) throw new NotFoundException('Cuidador nao encontrado');
+    if (sitter.email !== callerEmail) {
+      throw new ForbiddenException('Você não tem permissão para gerenciar este cuidador');
+    }
+    return sitter;
+  }
 
   // Pet Sitter Registration
   async register(data: any) {
@@ -102,12 +134,15 @@ export class PetSittersService {
   }
 
   // Update Pet Sitter profile
-  async update(id: string, data: any) {
-    return this.prisma.petSitter.update({ where: { id }, data });
+  async update(id: string, data: any, callerEmail: string) {
+    await this.assertOwnsSitter(id, callerEmail);
+    const safeData = pickAllowed(data, SITTER_ADMIN_ONLY_FIELDS);
+    return this.prisma.petSitter.update({ where: { id }, data: safeData });
   }
 
   // Add service to Pet Sitter
-  async addService(petSitterId: string, data: any) {
+  async addService(petSitterId: string, data: any, callerEmail: string) {
+    await this.assertOwnsSitter(petSitterId, callerEmail);
     return this.prisma.petSitterService.create({
       data: {
         petSitterId,
@@ -126,13 +161,22 @@ export class PetSittersService {
     });
   }
 
+  private async assertOwnsService(serviceId: string, callerEmail: string) {
+    const service = await this.prisma.petSitterService.findUnique({ where: { id: serviceId } });
+    if (!service) throw new NotFoundException('Servico nao encontrado');
+    await this.assertOwnsSitter(service.petSitterId, callerEmail);
+    return service;
+  }
+
   // Update service
-  async updateService(serviceId: string, data: any) {
+  async updateService(serviceId: string, data: any, callerEmail: string) {
+    await this.assertOwnsService(serviceId, callerEmail);
     return this.prisma.petSitterService.update({ where: { id: serviceId }, data });
   }
 
   // Delete service
-  async deleteService(serviceId: string) {
+  async deleteService(serviceId: string, callerEmail: string) {
+    await this.assertOwnsService(serviceId, callerEmail);
     return this.prisma.petSitterService.delete({ where: { id: serviceId } });
   }
 
@@ -192,7 +236,9 @@ export class PetSittersService {
   }
 
   // Get bookings for pet sitter
-  async getBookings(petSitterId: string, status?: string) {
+  async getBookings(petSitterId: string, status: string | undefined, callerEmail: string) {
+    await this.assertOwnsSitter(petSitterId, callerEmail);
+
     const where: Prisma.PetSitterBookingWhereInput = { petSitterId };
     if (status) where.status = status as any;
 
@@ -204,7 +250,11 @@ export class PetSittersService {
   }
 
   // Update booking status
-  async updateBookingStatus(bookingId: string, status: string, reason?: string) {
+  async updateBookingStatus(bookingId: string, status: string, reason: string | undefined, callerEmail: string) {
+    const existing = await this.prisma.petSitterBooking.findUnique({ where: { id: bookingId } });
+    if (!existing) throw new NotFoundException('Reserva nao encontrada');
+    await this.assertOwnsSitter(existing.petSitterId, callerEmail);
+
     const data: any = { status };
 
     if (status === 'CONFIRMED') data.confirmedAt = new Date();

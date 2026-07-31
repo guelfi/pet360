@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PetSittersService } from './pet-sitters.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { RegisterPetSitterDto } from './dto/register-pet-sitter.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -43,8 +45,8 @@ export class PetSittersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar perfil do cuidador' })
-  async update(@Param('id') id: string, @Body() dto: Partial<RegisterPetSitterDto>) {
-    return this.petSittersService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: Partial<RegisterPetSitterDto>, @Request() req: any) {
+    return this.petSittersService.update(id, dto, req.user.email);
   }
 
   // Services
@@ -52,24 +54,24 @@ export class PetSittersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Adicionar servico' })
-  async addService(@Param('id') id: string, @Body() dto: CreateServiceDto) {
-    return this.petSittersService.addService(id, dto);
+  async addService(@Param('id') id: string, @Body() dto: CreateServiceDto, @Request() req: any) {
+    return this.petSittersService.addService(id, dto, req.user.email);
   }
 
   @Put('services/:serviceId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar servico' })
-  async updateService(@Param('serviceId') serviceId: string, @Body() dto: Partial<CreateServiceDto>) {
-    return this.petSittersService.updateService(serviceId, dto);
+  async updateService(@Param('serviceId') serviceId: string, @Body() dto: Partial<CreateServiceDto>, @Request() req: any) {
+    return this.petSittersService.updateService(serviceId, dto, req.user.email);
   }
 
   @Delete('services/:serviceId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover servico' })
-  async deleteService(@Param('serviceId') serviceId: string) {
-    return this.petSittersService.deleteService(serviceId);
+  async deleteService(@Param('serviceId') serviceId: string, @Request() req: any) {
+    return this.petSittersService.deleteService(serviceId, req.user.email);
   }
 
   // Bookings
@@ -83,8 +85,8 @@ export class PetSittersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar reservas do cuidador' })
-  async getBookings(@Param('id') id: string, @Query('status') status?: string) {
-    return this.petSittersService.getBookings(id, status);
+  async getBookings(@Param('id') id: string, @Request() req: any, @Query('status') status?: string) {
+    return this.petSittersService.getBookings(id, status, req.user.email);
   }
 
   @Put('bookings/:bookingId/status')
@@ -94,8 +96,9 @@ export class PetSittersController {
   async updateBookingStatus(
     @Param('bookingId') bookingId: string,
     @Body() data: { status: string; reason?: string },
+    @Request() req: any,
   ) {
-    return this.petSittersService.updateBookingStatus(bookingId, data.status, data.reason);
+    return this.petSittersService.updateBookingStatus(bookingId, data.status, data.reason, req.user.email);
   }
 
   // Reviews
@@ -107,7 +110,8 @@ export class PetSittersController {
 
   // Admin endpoints
   @Get('admin/pending')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar cuidadores pendentes de aprovacao' })
   async getPendingApprovals() {
@@ -115,7 +119,8 @@ export class PetSittersController {
   }
 
   @Put('admin/:id/status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OWNER', 'ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aprovar/Rejeitar cuidador' })
   async updateStatus(@Param('id') id: string, @Body() data: { status: string; reason?: string }) {

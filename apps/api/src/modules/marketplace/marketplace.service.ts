@@ -1,10 +1,48 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+
+// Campos que so um admin da plataforma (via endpoints /admin/*) pode
+// alterar - nunca aceitos num update feito pelo proprio vendedor.
+const SELLER_ADMIN_ONLY_FIELDS = [
+  'isVerified', 'isFeatured', 'averageRating', 'totalReviews', 'totalSales',
+  'totalRevenue', 'commissionRate', 'isActive', 'approvedAt', 'suspendedAt',
+  'suspendedReason', 'passwordHash', 'email',
+];
+const LISTING_ADMIN_ONLY_FIELDS = [
+  'status', 'rejectionReason', 'publishedAt', 'featuredUntil', 'viewCount',
+  'favoriteCount', 'salesCount', 'averageRating', 'totalReviews', 'sellerId',
+];
+
+function pickAllowed<T extends Record<string, any>>(data: T, blocked: string[]): Partial<T> {
+  const result: Partial<T> = {};
+  for (const key of Object.keys(data)) {
+    if (!blocked.includes(key)) {
+      (result as any)[key] = data[key];
+    }
+  }
+  return result;
+}
 
 @Injectable()
 export class MarketplaceService {
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * MarketplaceSeller nao tem vinculo (userId) com a conta pet360 de quem
+   * chama a API - so tem um email proprio, nunca usado pra login de
+   * verdade (passwordHash nunca e setado no cadastro). Ate existir um
+   * fluxo de autenticacao real de vendedor, o email da conta pet360
+   * logada precisa bater com o email do vendedor pra provar posse.
+   */
+  private async assertOwnsSeller(sellerId: string, callerEmail: string) {
+    const seller = await this.prisma.marketplaceSeller.findUnique({ where: { id: sellerId } });
+    if (!seller) throw new NotFoundException('Vendedor nao encontrado');
+    if (seller.email !== callerEmail) {
+      throw new ForbiddenException('Você não tem permissão para gerenciar este vendedor');
+    }
+    return seller;
+  }
 
   // ========== SELLERS ==========
 
@@ -59,8 +97,10 @@ export class MarketplaceService {
     return seller;
   }
 
-  async updateSeller(id: string, data: any) {
-    return this.prisma.marketplaceSeller.update({ where: { id }, data });
+  async updateSeller(id: string, data: any, callerEmail: string) {
+    await this.assertOwnsSeller(id, callerEmail);
+    const safeData = pickAllowed(data, SELLER_ADMIN_ONLY_FIELDS);
+    return this.prisma.marketplaceSeller.update({ where: { id }, data: safeData });
   }
 
   // ========== CATEGORIES ==========
@@ -89,7 +129,8 @@ export class MarketplaceService {
 
   // ========== LISTINGS ==========
 
-  async createListing(sellerId: string, data: any) {
+  async createListing(sellerId: string, data: any, callerEmail: string) {
+    await this.assertOwnsSeller(sellerId, callerEmail);
     const slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     return this.prisma.marketplaceListing.create({
@@ -206,11 +247,21 @@ export class MarketplaceService {
     return listing;
   }
 
-  async updateListing(id: string, data: any) {
-    return this.prisma.marketplaceListing.update({ where: { id }, data });
+  private async assertOwnsListing(listingId: string, callerEmail: string) {
+    const listing = await this.prisma.marketplaceListing.findUnique({ where: { id: listingId } });
+    if (!listing) throw new NotFoundException('Produto nao encontrado');
+    await this.assertOwnsSeller(listing.sellerId, callerEmail);
+    return listing;
   }
 
-  async publishListing(id: string) {
+  async updateListing(id: string, data: any, callerEmail: string) {
+    await this.assertOwnsListing(id, callerEmail);
+    const safeData = pickAllowed(data, LISTING_ADMIN_ONLY_FIELDS);
+    return this.prisma.marketplaceListing.update({ where: { id }, data: safeData });
+  }
+
+  async publishListing(id: string, callerEmail: string) {
+    await this.assertOwnsListing(id, callerEmail);
     return this.prisma.marketplaceListing.update({
       where: { id },
       data: { status: 'PENDING_REVIEW', publishedAt: new Date() },
@@ -231,7 +282,8 @@ export class MarketplaceService {
     });
   }
 
-  async deleteListing(id: string) {
+  async deleteListing(id: string, callerEmail: string) {
+    await this.assertOwnsListing(id, callerEmail);
     return this.prisma.marketplaceListing.delete({ where: { id } });
   }
 
@@ -326,7 +378,9 @@ export class MarketplaceService {
     return order;
   }
 
-  async getOrders(sellerId: string, status?: string) {
+  async getOrders(sellerId: string, status: string | undefined, callerEmail: string) {
+    await this.assertOwnsSeller(sellerId, callerEmail);
+
     const where: Prisma.MarketplaceOrderWhereInput = { sellerId };
     if (status) where.status = status;
 
@@ -337,17 +391,29 @@ export class MarketplaceService {
     });
   }
 
-  async getOrder(id: string) {
+  async getOrder(id: string, callerEmail: string) {
     const order = await this.prisma.marketplaceOrder.findUnique({
       where: { id },
       include: { items: { include: { listing: true } }, seller: true },
     });
 
     if (!order) throw new NotFoundException('Pedido nao encontrado');
+    if (order.seller.email !== callerEmail) {
+      throw new ForbiddenException('Você não tem permissão para ver este pedido');
+    }
     return order;
   }
 
-  async updateOrderStatus(id: string, status: string, trackingCode?: string) {
+  async updateOrderStatus(id: string, status: string, trackingCode: string | undefined, callerEmail: string) {
+    const order = await this.prisma.marketplaceOrder.findUnique({
+      where: { id },
+      include: { seller: true },
+    });
+    if (!order) throw new NotFoundException('Pedido nao encontrado');
+    if (order.seller.email !== callerEmail) {
+      throw new ForbiddenException('Você não tem permissão para gerenciar este pedido');
+    }
+
     const data: any = { status };
 
     if (status === 'SHIPPED') {
