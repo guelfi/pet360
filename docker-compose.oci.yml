@@ -55,7 +55,7 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_EXPIRATION: 15m
       JWT_REFRESH_EXPIRATION: 7d
-      EVOLUTION_API_URL: http://evolution:8080
+      EVOLUTION_API_URL: http://batuara-evolution-api:8080
       EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
     depends_on:
       postgres:
@@ -69,6 +69,7 @@ services:
       retries: 3
     networks:
       - pet360-network
+      - evolution-shared
 
   web:
     build:
@@ -86,32 +87,13 @@ services:
     networks:
       - pet360-network
 
-  evolution:
-    image: evoapicloud/evolution-api:v2.3.7
-    container_name: pet360-evolution
-    restart: always
-    environment:
-      SERVER_URL: ${EVOLUTION_PUBLIC_URL}
-      AUTHENTICATION_TYPE: apikey
-      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
-      DATABASE_ENABLED: true
-      DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-pet360}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pet360}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - evolution_instances:/evolution/instances
-      - evolution_store:/evolution/store
-    networks:
-      - pet360-network
-
 networks:
   pet360-network:
     driver: bridge
+  evolution-shared:
+    external: true
+    name: docker_evolution-network
 
 volumes:
   postgres_data:
   redis_data:
-  evolution_instances:
-  evolution_store:
