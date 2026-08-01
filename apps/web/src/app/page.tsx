@@ -130,8 +130,9 @@ const pricingPlans = [
   },
   {
     name: 'Profissional',
-    price: 'R$ 149',
+    price: 'R$ 99',
     period: '/mes',
+    annualNote: 'ou R$ 990/ano - pague 10 meses, use 12',
     description: 'Para negocios em crescimento',
     features: [
       'Pets ilimitados',
@@ -448,8 +449,13 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="mb-6">
-                    <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
-                    {plan.period && <span className="text-gray-500">{plan.period}</span>}
+                    <div>
+                      <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
+                      {plan.period && <span className="text-gray-500">{plan.period}</span>}
+                    </div>
+                    {plan.annualNote && (
+                      <p className="text-sm text-primary font-medium mt-2">{plan.annualNote}</p>
+                    )}
                   </div>
                   <ul className="space-y-3 mb-8 text-left">
                     {plan.features.map((feature, j) => (
