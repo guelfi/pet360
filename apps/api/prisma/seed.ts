@@ -32,11 +32,11 @@ async function main() {
   // USUARIOS (um por role, mesma senha, para testar RBAC via email/senha)
   // ===========================================
 
-  const passwordHash = await bcrypt.hash('admin123', 10);
+  const passwordHash = await bcrypt.hash('Admin246#', 10);
 
   const admin = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'admin@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Administrador',
@@ -49,7 +49,7 @@ async function main() {
 
   const vet = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'vet@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Dr. Carlos Silva',
@@ -63,7 +63,7 @@ async function main() {
 
   const manager = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'gerente@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Fernanda Souza',
@@ -76,7 +76,7 @@ async function main() {
 
   const groomer = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'groomer@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Juliana Alves',
@@ -89,7 +89,7 @@ async function main() {
 
   const attendant = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'atendente@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Bruno Costa',
@@ -102,7 +102,7 @@ async function main() {
 
   const trainer = await prisma.user.upsert({
     where: { businessId_email: { businessId: business.id, email: 'trainer@petshopdemo.com' } },
-    update: {},
+    update: { passwordHash },
     create: {
       businessId: business.id,
       name: 'Rafael Nunes',
@@ -113,7 +113,7 @@ async function main() {
     },
   });
 
-  console.log('Users created: admin, vet, manager, groomer, attendant, trainer (senha: admin123)');
+  console.log('Users created: admin, vet, manager, groomer, attendant, trainer (senha: Admin246#)');
 
   // ===========================================
   // SERVICOS
@@ -1064,7 +1064,7 @@ async function main() {
 
   const petSitter = await prisma.petSitter.upsert({
     where: { email: 'cuidador@petsitter-demo.com' },
-    update: {},
+    update: { passwordHash },
     create: {
       name: 'Patricia Mendes',
       email: 'cuidador@petsitter-demo.com',
@@ -1153,7 +1153,7 @@ async function main() {
 
   const seller = await prisma.marketplaceSeller.upsert({
     where: { email: 'vendedor@petshopdemo.com' },
-    update: {},
+    update: { passwordHash },
     create: {
       name: 'PetShop Demo Store',
       email: 'vendedor@petshopdemo.com',
@@ -1256,7 +1256,7 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('');
-  console.log('Login (email/senha, todos com senha admin123):');
+  console.log('Login (email/senha, todos com senha Admin246#):');
   console.log('  OWNER      admin@petshopdemo.com');
   console.log('  ADMIN      gerente@petshopdemo.com');
   console.log('  VET        vet@petshopdemo.com');
