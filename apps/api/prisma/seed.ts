@@ -42,7 +42,7 @@ async function main() {
       name: 'Administrador',
       email: 'admin@petshopdemo.com',
       phone: '11999999999',
-      role: 'OWNER',
+      role: 'PROPRIETARIO',
       passwordHash,
     },
   });
@@ -55,7 +55,7 @@ async function main() {
       name: 'Dr. Carlos Silva',
       email: 'vet@petshopdemo.com',
       phone: '11988888888',
-      role: 'VET',
+      role: 'VETERINARIO',
       crmv: '12345-SP',
       passwordHash,
     },
@@ -69,7 +69,7 @@ async function main() {
       name: 'Fernanda Souza',
       email: 'gerente@petshopdemo.com',
       phone: '11966666666',
-      role: 'ADMIN',
+      role: 'ADMINISTRADOR',
       passwordHash,
     },
   });
@@ -82,7 +82,7 @@ async function main() {
       name: 'Juliana Alves',
       email: 'groomer@petshopdemo.com',
       phone: '11955555555',
-      role: 'GROOMER',
+      role: 'TOSADOR',
       passwordHash,
     },
   });
@@ -95,7 +95,7 @@ async function main() {
       name: 'Bruno Costa',
       email: 'atendente@petshopdemo.com',
       phone: '11944444444',
-      role: 'ATTENDANT',
+      role: 'ATENDENTE',
       passwordHash,
     },
   });
@@ -108,7 +108,7 @@ async function main() {
       name: 'Rafael Nunes',
       email: 'trainer@petshopdemo.com',
       phone: '11933333333',
-      role: 'TRAINER',
+      role: 'ADESTRADOR',
       passwordHash,
     },
   });
@@ -1256,16 +1256,235 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('');
-  console.log('Login (email/senha, todos com senha Admin246#):');
-  console.log('  OWNER      admin@petshopdemo.com');
-  console.log('  ADMIN      gerente@petshopdemo.com');
-  console.log('  VET        vet@petshopdemo.com');
-  console.log('  GROOMER    groomer@petshopdemo.com');
-  console.log('  ATTENDANT  atendente@petshopdemo.com');
-  console.log('  TRAINER    trainer@petshopdemo.com');
+  console.log('Tenant demo (email/senha, todos com senha Admin246#):');
+  console.log('  PROPRIETARIO  admin@petshopdemo.com');
+  console.log('  ADMINISTRADOR gerente@petshopdemo.com');
+  console.log('  VETERINARIO   vet@petshopdemo.com');
+  console.log('  TOSADOR       groomer@petshopdemo.com');
+  console.log('  ATENDENTE     atendente@petshopdemo.com');
+  console.log('  ADESTRADOR    trainer@petshopdemo.com');
 }
 
-main()
+// ===========================================
+// ADMINISTRADOR DA PLATAFORMA (cross-tenant)
+// ===========================================
+
+async function seedPlatformAdmin() {
+  const passwordHash = await bcrypt.hash('PlatformAdmin@2026!', 10);
+
+  await prisma.platformAdmin.upsert({
+    where: { email: 'admin@plataforma.pet360.com.br' },
+    update: { passwordHash },
+    create: {
+      name: 'Admin Plataforma',
+      email: 'admin@plataforma.pet360.com.br',
+      passwordHash,
+    },
+  });
+
+  console.log('Platform admin created: admin@plataforma.pet360.com.br (senha: PlatformAdmin@2026!)');
+}
+
+// ===========================================
+// TENANTS ADICIONAIS (multi-tenant, isolamento)
+// ===========================================
+
+interface ExtraTenantConfig {
+  slug: string;
+  name: string;
+  phone: string;
+  email: string;
+  businessTypes: string[];
+  city: string;
+  state: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  serviceName: string;
+  serviceCategory: string;
+  servicePrice: number;
+  tutorName: string;
+  tutorCpf: string;
+  tutorPhone: string;
+  petName: string;
+  petSpecies: 'DOG' | 'CAT';
+}
+
+async function seedExtraTenant(config: ExtraTenantConfig) {
+  const business = await prisma.business.upsert({
+    where: { slug: config.slug },
+    update: {},
+    create: {
+      name: config.name,
+      slug: config.slug,
+      phone: config.phone,
+      email: config.email,
+      businessTypes: config.businessTypes,
+      city: config.city,
+      state: config.state,
+    },
+  });
+
+  const passwordHash = await bcrypt.hash('Admin246#', 10);
+
+  const owner = await prisma.user.upsert({
+    where: { businessId_email: { businessId: business.id, email: config.ownerEmail } },
+    update: { passwordHash },
+    create: {
+      businessId: business.id,
+      name: config.ownerName,
+      email: config.ownerEmail,
+      phone: config.ownerPhone,
+      role: 'PROPRIETARIO',
+      passwordHash,
+    },
+  });
+
+  const service = await prisma.service.upsert({
+    where: { id: `service-${config.slug}` },
+    update: {},
+    create: {
+      id: `service-${config.slug}`,
+      businessId: business.id,
+      name: config.serviceName,
+      category: config.serviceCategory,
+      duration: 45,
+      price: config.servicePrice,
+    },
+  });
+
+  const tutor = await prisma.tutor.upsert({
+    where: { businessId_cpf: { businessId: business.id, cpf: config.tutorCpf } },
+    update: {},
+    create: {
+      businessId: business.id,
+      name: config.tutorName,
+      cpf: config.tutorCpf,
+      phone: config.tutorPhone,
+      city: config.city,
+      state: config.state,
+    },
+  });
+
+  const pet = await prisma.pet.upsert({
+    where: { id: `pet-${config.slug}` },
+    update: {},
+    create: {
+      id: `pet-${config.slug}`,
+      businessId: business.id,
+      tutorId: tutor.id,
+      name: config.petName,
+      species: config.petSpecies,
+      gender: 'UNKNOWN',
+    },
+  });
+
+  const scheduledDate = new Date();
+  scheduledDate.setDate(scheduledDate.getDate() + 2);
+
+  await prisma.appointment.upsert({
+    where: { id: `appt-${config.slug}` },
+    update: {},
+    create: {
+      id: `appt-${config.slug}`,
+      businessId: business.id,
+      tutorId: tutor.id,
+      petId: pet.id,
+      serviceId: service.id,
+      professionalId: owner.id,
+      appointmentType: 'CONSULTATION',
+      scheduledDate,
+      scheduledTime: '10:00',
+      duration: 45,
+      status: 'SCHEDULED',
+      price: config.servicePrice,
+      finalPrice: config.servicePrice,
+    },
+  });
+
+  console.log(`Tenant "${config.name}" criado (slug: ${config.slug}, owner: ${config.ownerEmail})`);
+}
+
+async function seedExtraTenants() {
+  await seedExtraTenant({
+    slug: 'clinica-vet-amigo',
+    name: 'Clinica Vet Amigo',
+    phone: '11922220001',
+    email: 'contato@clinicavetamigo.com.br',
+    businessTypes: ['VETERINARY'],
+    city: 'Sao Paulo',
+    state: 'SP',
+    ownerName: 'Patricia Mendes',
+    ownerEmail: 'owner@tenant2demo.com',
+    ownerPhone: '11922220002',
+    serviceName: 'Consulta Clinica Geral',
+    serviceCategory: 'VETERINARY',
+    servicePrice: 130,
+    tutorName: 'Roberto Alves',
+    tutorCpf: '44455566611',
+    tutorPhone: '11922220003',
+    petName: 'Bidu',
+    petSpecies: 'DOG',
+  });
+
+  await seedExtraTenant({
+    slug: 'petshop-bicho-solto',
+    name: 'PetShop Bicho Solto',
+    phone: '11933330001',
+    email: 'contato@bichosolto.com.br',
+    businessTypes: ['PETSHOP', 'GROOMING'],
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    ownerName: 'Marcos Vieira',
+    ownerEmail: 'owner@tenant3demo.com',
+    ownerPhone: '11933330002',
+    serviceName: 'Banho Completo',
+    serviceCategory: 'GROOMING',
+    servicePrice: 60,
+    tutorName: 'Camila Rocha',
+    tutorCpf: '55566677722',
+    tutorPhone: '11933330003',
+    petName: 'Mel',
+    petSpecies: 'CAT',
+  });
+
+  await seedExtraTenant({
+    slug: 'lar-doce-lar-adocao',
+    name: 'Lar Doce Lar - Adocao e Hotel Pet',
+    phone: '11944440001',
+    email: 'contato@lardocelar.com.br',
+    businessTypes: ['ADOPTION', 'BOARDING'],
+    city: 'Belo Horizonte',
+    state: 'MG',
+    ownerName: 'Beatriz Lima',
+    ownerEmail: 'owner@tenant4demo.com',
+    ownerPhone: '11944440002',
+    serviceName: 'Avaliacao para Adocao',
+    serviceCategory: 'ADOPTION',
+    servicePrice: 0,
+    tutorName: 'Fernando Souza',
+    tutorCpf: '66677788833',
+    tutorPhone: '11944440003',
+    petName: 'Rex',
+    petSpecies: 'DOG',
+  });
+}
+
+async function runAll() {
+  await seedPlatformAdmin();
+  await main();
+  await seedExtraTenants();
+
+  console.log('');
+  console.log('=== RESUMO FINAL ===');
+  console.log('Admin de Plataforma: admin@plataforma.pet360.com.br / PlatformAdmin@2026!');
+  console.log('Tenant demo: petshop-demo (admin@petshopdemo.com / Admin246#)');
+  console.log('Tenant 2: clinica-vet-amigo (owner@tenant2demo.com / Admin246#)');
+  console.log('Tenant 3: petshop-bicho-solto (owner@tenant3demo.com / Admin246#)');
+  console.log('Tenant 4: lar-doce-lar-adocao (owner@tenant4demo.com / Admin246#)');
+}
+
+runAll()
   .catch((e) => {
     console.error(e);
     process.exit(1);
