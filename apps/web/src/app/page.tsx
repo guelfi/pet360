@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -185,15 +184,13 @@ const faqs = [
   },
 ];
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b">
-        <div className="container mx-auto py-4 px-4">
-          <nav className="flex items-center justify-between">
+        <div className="container mx-auto px-4 h-20">
+          <nav className="flex items-center justify-between h-full">
             <Link href="/" className="flex items-center gap-2">
               <div className="bg-primary rounded-xl p-2">
                 <PawPrint className="h-6 w-6 text-white" />
@@ -202,17 +199,17 @@ export default function Home() {
                 Pet360
               </span>
             </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-600 hover:text-primary transition-colors">
+            <div className="hidden md:flex items-center gap-1">
+              <a href="#features" className="text-gray-600 hover:text-primary hover:bg-primary/10 rounded-full px-4 py-2 text-sm font-medium transition-colors">
                 Recursos
               </a>
-              <a href="#pricing" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#pricing" className="text-gray-600 hover:text-primary hover:bg-primary/10 rounded-full px-4 py-2 text-sm font-medium transition-colors">
                 Precos
               </a>
-              <a href="#testimonials" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#testimonials" className="text-gray-600 hover:text-primary hover:bg-primary/10 rounded-full px-4 py-2 text-sm font-medium transition-colors">
                 Depoimentos
               </a>
-              <a href="#faq" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#faq" className="text-gray-600 hover:text-primary hover:bg-primary/10 rounded-full px-4 py-2 text-sm font-medium transition-colors">
                 FAQ
               </a>
             </div>
@@ -230,72 +227,54 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section with Banner */}
-      <section className="relative pt-24 overflow-hidden">
-        {/* Hero Banner Image */}
-        <div className="relative w-full">
-          <Image
-            src={`${basePath}/images/hero-banner-2.jpg`}
-            alt="Pet360 - Sistema Completo de Gestao para Negocios Pet"
-            width={1920}
-            height={1080}
-            className="w-full h-auto object-cover"
-            priority
-          />
-          {/* Overlay with CTA */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent flex items-center">
-            <div className="container mx-auto px-4">
-              <div className="max-w-xl">
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full mb-6">
-                  <Sparkles className="h-4 w-4" />
-                  <span className="text-sm font-medium">Plataforma #1 para Negocios Pet</span>
-                </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-                  Sistema Completo de Gestao Pet
-                </h1>
-                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
-                  Clinicas veterinarias, pet shops, hoteis e daycares em uma unica plataforma.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/register">
-                    <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-6 h-auto shadow-lg">
-                      <Zap className="h-5 w-5 mr-2" />
-                      Comecar Gratis
-                    </Button>
-                  </Link>
-                  <Link href="#features">
-                    <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 text-lg px-8 py-6 h-auto">
-                      Conhecer Recursos
-                      <ArrowRight className="h-5 w-5 ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-                <div className="flex flex-wrap items-center gap-6 mt-8 text-sm text-white/80">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" />
-                    <span>Setup em 5 minutos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" />
-                    <span>Sem cartao de credito</span>
-                  </div>
-                </div>
+      {/* Hero */}
+      <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-blue-50 pt-20 scroll-mt-20">
+        <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">Plataforma #1 para Negocios Pet</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Sistema Completo de Gestao Pet
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+              Clinicas veterinarias, pet shops, hoteis e daycares em uma unica plataforma.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/register">
+                <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-6 h-auto shadow-lg w-full sm:w-auto">
+                  <Zap className="h-5 w-5 mr-2" />
+                  Comecar Gratis
+                </Button>
+              </Link>
+              <Link href="#features">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 h-auto w-full sm:w-auto">
+                  Conhecer Recursos
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+            <div className="flex flex-wrap items-center gap-6 mt-8 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-600" />
+                <span>Setup em 5 minutos</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-600" />
+                <span>Sem cartao de credito</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Second Banner Section */}
-      <section id="demo" className="relative overflow-hidden">
-        <div className="relative w-full">
-          <Image
-            src={`${basePath}/images/hero-banner-1.jpg`}
-            alt="Pet360 - Todas as funcionalidades"
-            width={1920}
-            height={1080}
-            className="w-full h-auto object-cover"
-          />
+          <div className="relative">
+            <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/5]">
+              <img
+                src="https://images.unsplash.com/photo-1681996543579-b24cd01d4516?auto=format&fit=crop&w=1200&q=80"
+                alt="Gestao de negocio pet - notebook e estetoscopio"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -314,7 +293,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-gray-50">
+      <section id="features" className="py-24 bg-gray-50 scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
@@ -380,7 +359,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-24 bg-gradient-to-br from-primary to-blue-700">
+      <section id="testimonials" className="py-24 bg-gradient-to-br from-primary to-blue-700 scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -420,7 +399,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 bg-gray-50">
+      <section id="pricing" className="py-24 bg-gray-50 scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
@@ -478,7 +457,7 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-24 bg-white">
+      <section id="faq" className="py-24 bg-white scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">

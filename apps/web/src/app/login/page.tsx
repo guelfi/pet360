@@ -74,11 +74,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1630438994394-3deff7a591bf?auto=format&fit=crop&w=1600&q=80')",
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-blue-900/80" />
+
+      <div className="w-full max-w-md relative z-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-gray-500 hover:text-primary text-sm font-medium mb-4"
+          className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm font-medium mb-4"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
