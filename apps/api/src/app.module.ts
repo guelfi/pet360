@@ -20,6 +20,7 @@ import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { PetSittersModule } from './modules/pet-sitters/pet-sitters.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
     AnalyticsModule,
     PetSittersModule,
     MarketplaceModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
