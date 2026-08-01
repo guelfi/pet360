@@ -18,13 +18,13 @@ export function HeroImageCarousel({ basePath = '' }: { basePath?: string }) {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/5] relative bg-white">
+    <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[3/2] relative bg-white">
       {IMAGES.map((image, i) => (
         <img
           key={image.src}
           src={`${basePath}${image.src}`}
           alt={image.alt}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-[1500ms] ease-in-out ${
             i === active ? 'opacity-100' : 'opacity-0'
           }`}
         />
