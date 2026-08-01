@@ -89,7 +89,18 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
-      <Card className="w-full max-w-lg">
+      <div className="w-full max-w-lg">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-gray-500 hover:text-primary text-sm font-medium mb-4"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Voltar para o inicio
+        </Link>
+
+        <Card className="w-full">
         <CardHeader className="text-center">
           <Link href="/" className="text-2xl font-bold text-primary mb-2 block">Pet360</Link>
           <CardTitle>Criar Conta</CardTitle>
@@ -254,7 +265,8 @@ export default function RegisterPage() {
             </Link>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
