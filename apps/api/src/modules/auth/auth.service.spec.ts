@@ -72,7 +72,7 @@ describe('AuthService', () => {
         password: hashedPassword,
         name: 'Test User',
         businessId: 'business-1',
-        role: 'OWNER',
+        role: 'PROPRIETARIO',
         isActive: true,
       };
 
@@ -133,7 +133,7 @@ describe('AuthService', () => {
         email: 'test@example.com',
         name: 'Test User',
         businessId: 'business-1',
-        role: 'OWNER',
+        role: 'PROPRIETARIO',
       };
 
       mockJwtService.signAsync
@@ -170,7 +170,7 @@ describe('AuthService', () => {
         email: 'john@example.com',
         name: 'John Doe',
         businessId: 'business-1',
-        role: 'OWNER',
+        role: 'PROPRIETARIO',
       };
 
       mockPrismaService.user.findFirst.mockResolvedValue(null);

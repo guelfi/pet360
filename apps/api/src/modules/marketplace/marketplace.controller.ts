@@ -51,7 +51,7 @@ export class MarketplaceController {
 
   @Post('categories')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar categoria (Admin)' })
   async createCategory(@Body() dto: CreateCategoryDto) {
@@ -176,7 +176,7 @@ export class MarketplaceController {
 
   @Get('admin/pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar anuncios pendentes de aprovacao' })
   async getPendingListings() {
@@ -185,7 +185,7 @@ export class MarketplaceController {
 
   @Post('admin/listings/:id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aprovar anuncio' })
   async approveListing(@Param('id') id: string) {
@@ -194,7 +194,7 @@ export class MarketplaceController {
 
   @Post('admin/listings/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Rejeitar anuncio' })
   async rejectListing(@Param('id') id: string, @Body() data: RejectListingDto) {
@@ -203,7 +203,7 @@ export class MarketplaceController {
 
   @Get('admin/stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Estatisticas do marketplace' })
   async getStats() {

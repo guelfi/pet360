@@ -26,14 +26,14 @@ export class BusinessesController {
   }
 
   @Put('current')
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiOperation({ summary: 'Atualizar negocio atual' })
   async updateCurrent(@Request() req: any, @Body() data: UpdateBusinessDto) {
     return this.businessesService.update(req.user.businessId, data);
   }
 
   @Put('settings')
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiOperation({ summary: 'Atualizar configuracoes' })
   async updateSettings(@Request() req: any, @Body() settings: any) {
     return this.businessesService.updateSettings(req.user.businessId, settings);

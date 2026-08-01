@@ -10,7 +10,7 @@ import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
 @ApiTags('medical-records')
 @Controller('medical-records')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('OWNER', 'ADMIN', 'VET')
+@Roles('PROPRIETARIO', 'ADMINISTRADOR', 'VETERINARIO')
 @ApiBearerAuth()
 export class MedicalRecordsController {
   constructor(private medicalRecordsService: MedicalRecordsService) {}

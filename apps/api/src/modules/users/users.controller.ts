@@ -11,7 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('OWNER', 'ADMIN')
+@Roles('PROPRIETARIO', 'ADMINISTRADOR')
 @ApiBearerAuth()
 export class UsersController {
   constructor(private usersService: UsersService) {}

@@ -92,7 +92,7 @@ export class UsersService {
           name: dto.userName,
           email: dto.userEmail,
           phone: dto.userPhone,
-          role: 'OWNER',
+          role: 'PROPRIETARIO',
           passwordHash,
         },
       });

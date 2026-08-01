@@ -124,12 +124,12 @@ enum RoomType {
 }
 
 enum UserRole {
-  OWNER
-  ADMIN
-  VET
-  GROOMER
-  ATTENDANT
-  TRAINER
+  PROPRIETARIO
+  ADMINISTRADOR
+  VETERINARIO
+  TOSADOR
+  ATENDENTE
+  ADESTRADOR
 }
 
 // ===========================================
@@ -182,7 +182,7 @@ model User {
   name           String
   email          String
   phone          String
-  role           UserRole  @default(ATTENDANT)
+  role           UserRole  @default(ATENDENTE)
   crmv           String?
   specialties    String[]
   color          String?

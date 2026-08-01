@@ -114,7 +114,7 @@ export class PetSittersController {
   // Admin endpoints
   @Get('admin/pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar cuidadores pendentes de aprovacao' })
   async getPendingApprovals() {
@@ -123,7 +123,7 @@ export class PetSittersController {
 
   @Put('admin/:id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Aprovar/Rejeitar cuidador' })
   async updateStatus(@Param('id') id: string, @Body() data: UpdateBookingStatusDto) {

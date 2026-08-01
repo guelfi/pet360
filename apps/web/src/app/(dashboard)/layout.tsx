@@ -33,17 +33,26 @@ const menuItems = [
   { href: '/dashboard/agenda', label: 'Agenda', icon: Calendar },
   { href: '/dashboard/tutores', label: 'Tutores', icon: Users },
   { href: '/dashboard/pets', label: 'Pets', icon: Dog },
-  { href: '/dashboard/prontuarios', label: 'Prontuarios', icon: Stethoscope, roles: ['OWNER', 'ADMIN', 'VET'] },
-  { href: '/dashboard/vacinas', label: 'Vacinas', icon: Syringe, roles: ['OWNER', 'ADMIN', 'VET'] },
+  { href: '/dashboard/prontuarios', label: 'Prontuarios', icon: Stethoscope, roles: ['PROPRIETARIO', 'ADMINISTRADOR', 'VETERINARIO'] },
+  { href: '/dashboard/vacinas', label: 'Vacinas', icon: Syringe, roles: ['PROPRIETARIO', 'ADMINISTRADOR', 'VETERINARIO'] },
   { href: '/dashboard/hospedagem', label: 'Hospedagem', icon: Hotel },
   { href: '/dashboard/adocao', label: 'Adocao', icon: Heart },
   { href: '/dashboard/produtos', label: 'Produtos', icon: Package },
   { href: '/dashboard/vendas', label: 'Vendas', icon: ShoppingCart },
-  { href: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign, roles: ['OWNER', 'ADMIN'] },
+  { href: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign, roles: ['PROPRIETARIO', 'ADMINISTRADOR'] },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/whatsapp', label: 'WhatsApp', icon: MessageSquare },
-  { href: '/dashboard/configuracoes', label: 'Configuracoes', icon: Settings, roles: ['OWNER', 'ADMIN'] },
+  { href: '/dashboard/configuracoes', label: 'Configuracoes', icon: Settings, roles: ['PROPRIETARIO', 'ADMINISTRADOR'] },
 ];
+
+const ROLE_LABELS: Record<string, string> = {
+  PROPRIETARIO: 'Proprietario',
+  ADMINISTRADOR: 'Administrador',
+  VETERINARIO: 'Veterinario',
+  TOSADOR: 'Tosador',
+  ATENDENTE: 'Atendente',
+  ADESTRADOR: 'Adestrador',
+};
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
@@ -114,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user.name}</p>
-              <p className="text-xs text-gray-500 truncate">{user.role}</p>
+              <p className="text-xs text-gray-500 truncate">{ROLE_LABELS[user.role] || user.role}</p>
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={logout}>

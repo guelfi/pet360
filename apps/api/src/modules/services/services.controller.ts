@@ -33,21 +33,21 @@ export class ServicesController {
   }
 
   @Post()
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiOperation({ summary: 'Criar servico' })
   async create(@Body() data: CreateServiceDto, @Request() req: any) {
     return this.servicesService.create(req.user.businessId, data);
   }
 
   @Put(':id')
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiOperation({ summary: 'Atualizar servico' })
   async update(@Param('id') id: string, @Body() data: UpdateServiceDto, @Request() req: any) {
     return this.servicesService.update(id, req.user.businessId, data);
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'ADMIN')
+  @Roles('PROPRIETARIO', 'ADMINISTRADOR')
   @ApiOperation({ summary: 'Remover servico' })
   async delete(@Param('id') id: string, @Request() req: any) {
     return this.servicesService.delete(id, req.user.businessId);

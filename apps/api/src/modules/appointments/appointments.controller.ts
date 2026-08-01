@@ -6,9 +6,10 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 
-// VET, GROOMER e TRAINER so enxergam/agem sobre a propria agenda (matriz
-// de RBAC aprovada); OWNER, ADMIN e ATTENDANT tem acesso a agenda geral.
-const OWN_AGENDA_ONLY_ROLES = ['VET', 'GROOMER', 'TRAINER'];
+// VETERINARIO, TOSADOR e ADESTRADOR so enxergam/agem sobre a propria agenda
+// (matriz de RBAC aprovada); PROPRIETARIO, ADMINISTRADOR e ATENDENTE tem
+// acesso a agenda geral.
+const OWN_AGENDA_ONLY_ROLES = ['VETERINARIO', 'TOSADOR', 'ADESTRADOR'];
 
 @ApiTags('appointments')
 @Controller('appointments')

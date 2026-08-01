@@ -10,7 +10,7 @@ import { UpdateVaccineRecordDto } from './dto/update-vaccine-record.dto';
 @ApiTags('vaccines')
 @Controller('vaccines')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('OWNER', 'ADMIN', 'VET')
+@Roles('PROPRIETARIO', 'ADMINISTRADOR', 'VETERINARIO')
 @ApiBearerAuth()
 export class VaccinesController {
   constructor(private vaccinesService: VaccinesService) {}

@@ -8,7 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 @ApiTags('finance')
 @Controller('finance')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('OWNER', 'ADMIN')
+@Roles('PROPRIETARIO', 'ADMINISTRADOR')
 @ApiBearerAuth()
 export class FinanceController {
   constructor(private financeService: FinanceService) {}
