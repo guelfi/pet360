@@ -55,6 +55,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         businessId: user.businessId,
+        businessName: user.business?.name,
       },
     };
   }
@@ -98,7 +99,8 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Usuario nao encontrado');
     }
-    return user;
+    const { business, ...rest } = user as typeof user & { business?: { name: string } };
+    return { ...rest, businessName: business?.name };
   }
 
   async requestOtp(phone: string) {

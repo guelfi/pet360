@@ -144,7 +144,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex-1" />
-          <div className="text-sm text-gray-600">
+          <div className="text-lg font-bold text-primary">
             {user.businessName || 'Meu Negocio'}
           </div>
         </header>
