@@ -235,7 +235,7 @@ export default function Home() {
 
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-blue-50 pt-20 scroll-mt-20">
-        <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-stretch">
           <div>
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
               <Sparkles className="h-4 w-4" />
@@ -281,7 +281,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <div className="relative">
+          <div className="relative h-full min-h-[320px]">
             <HeroImageCarousel basePath={basePath} />
           </div>
         </div>

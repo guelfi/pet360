@@ -18,7 +18,7 @@ export function HeroImageCarousel({ basePath = '' }: { basePath?: string }) {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[3/2] relative bg-white">
+    <div className="rounded-2xl overflow-hidden shadow-2xl h-full relative bg-white">
       {IMAGES.map((image, i) => (
         <img
           key={image.src}
