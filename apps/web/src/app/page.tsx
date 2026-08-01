@@ -132,7 +132,7 @@ const pricingPlans = [
     name: 'Profissional',
     price: 'R$ 99',
     period: '/mes',
-    annualNote: 'ou R$ 990/ano - pague 10 meses, use 12',
+    annualNote: 'ou R$ 900/ano (equivalente a R$ 75/mes) - 24% de desconto',
     description: 'Para negocios em crescimento',
     features: [
       'Pets ilimitados',
