@@ -27,8 +27,10 @@ COPY apps/web ./apps/web
 # Build with public API URL (must be set at build time for Next.js)
 ARG NEXT_PUBLIC_API_URL=http://localhost:3001
 ARG NEXT_BASE_PATH=
+ARG API_INTERNAL_URL=http://api:3001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_BASE_PATH=$NEXT_BASE_PATH
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 
 WORKDIR /app/apps/web
 RUN pnpm build
