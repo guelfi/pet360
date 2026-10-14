@@ -651,3 +651,8 @@ Este projeto esta licenciado sob a licenca MIT. Veja o arquivo [LICENSE](LICENSE
 <p align="center">
   Desenvolvido com paixao pelos pets
 </p>
+
+
+### Dominio publico na OCI
+
+Consulte [o guia de migracao do dominio](docs/domain-production.md) e os valores publicos em [`.env.oci.example`](.env.oci.example) antes de publicar o primeiro deploy com URLs na raiz.

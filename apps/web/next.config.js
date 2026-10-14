@@ -31,7 +31,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/:path*`,
+        // O destino e interno e preserva /api; a URL publica nao deve
+        // redirecionar o proxy de volta para o proprio frontend.
+        destination: `${process.env.API_INTERNAL_URL || 'http://localhost:3001'}/api/:path*`,
       },
     ];
   },
